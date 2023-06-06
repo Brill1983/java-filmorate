@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FilmControllerTest {
 
-    FilmController filmController;
-    Film film;
+    private FilmController filmController;
+    private Film film;
 
     @BeforeEach
     void setUp() {
@@ -29,8 +29,8 @@ class FilmControllerTest {
     @Test
     void addFilmAndGetFilmList() {
         filmController.addFilm(film);
-        List<Film> list = filmController.getFilmList();
-        assertEquals(1, filmController.getFilmList().size());
+        List<Film> list = filmController.getAllFilms();
+        assertEquals(1, filmController.getAllFilms().size());
         assertEquals(film.getName(), list.get(0).getName());
         assertEquals(film.getDescription(), list.get(0).getDescription());
         assertEquals(film.getDuration(), list.get(0).getDuration());
@@ -49,7 +49,6 @@ class FilmControllerTest {
                             .releaseDate(LocalDate.of(1970, 5, 30))
                             .duration(83)
                             .build();
-                    ;
                     filmController.addFilm(film2);
                 });
         assertEquals(NullPointerException.class, exception.getClass());
@@ -112,7 +111,7 @@ class FilmControllerTest {
                 .duration(83)
                 .build();
         filmController.updateFilm(film2);
-        List<Film> list = filmController.getFilmList();
+        List<Film> list = filmController.getAllFilms();
         assertEquals("Белое солнце пустыни (режиссерская версия)", list.get(0).getName());
         assertEquals("Очень хороший фильм, а теперь в полной версии", list.get(0).getDescription());
     }

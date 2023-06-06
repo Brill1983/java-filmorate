@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
 
-    UserController userController;
-    User user;
+    private UserController userController;
+    private User user;
 
     @BeforeEach
     void setUp() {
@@ -29,8 +29,8 @@ class UserControllerTest {
     @Test
     void addUserAndGetUserList() {
         userController.saveUser(user);
-        List<User> list = userController.getUserList();
-        assertEquals(1, userController.getUserList().size());
+        List<User> list = userController.getAllUsers();
+        assertEquals(1, userController.getAllUsers().size());
         assertEquals(1, list.get(0).getId());
         assertEquals(user.getName(), list.get(0).getName());
         assertEquals(user.getEmail(), list.get(0).getEmail());
@@ -97,7 +97,7 @@ class UserControllerTest {
     void addUserWithNullName() {
         user.setName(null);
         userController.saveUser(user);
-        List<User> list = userController.getUserList();
+        List<User> list = userController.getAllUsers();
         assertEquals("Brill", list.get(0).getName());
     }
 
@@ -105,7 +105,7 @@ class UserControllerTest {
     void addUserWithBlankName() {
         user.setName("");
         userController.saveUser(user);
-        List<User> list = userController.getUserList();
+        List<User> list = userController.getAllUsers();
         assertEquals("Brill", list.get(0).getName());
     }
 
@@ -120,7 +120,7 @@ class UserControllerTest {
                 .login("Sycophant")
                 .build();
         userController.updateUser(user2);
-        List<User> list = userController.getUserList();
+        List<User> list = userController.getAllUsers();
         assertEquals("Dmitry", list.get(0).getName());
         assertEquals("brill1@bk.ru", list.get(0).getEmail());
         assertEquals("Sycophant", list.get(0).getLogin());
