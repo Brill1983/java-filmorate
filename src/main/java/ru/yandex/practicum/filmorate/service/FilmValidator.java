@@ -2,8 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.time.LocalDate;
 
@@ -28,6 +30,13 @@ public class FilmValidator {
         if (film.getDuration() <= 0) {
             log.debug("В запросе передан фильм с с продолжительностью {}", film.getDuration());
             throw new ValidationException("Продолжительность не может быть 0 или отрицательной");
+        }
+    }
+
+    public static void validId(long id, FilmStorage filmStorage) {
+        if (!filmStorage.getFilmsIds().contains(id)) {
+            log.debug("В фильм с ID: {}, отсутствует в базе", id);
+            throw new FilmNotFoundException("Фильма с ID " + id + " нет в базе");
         }
     }
 }

@@ -7,13 +7,13 @@ import java.util.Set;
 
 public interface UserStorage {
 
-    public User saveUser(User user);
+    User saveUser(User user);
 
-    public User updateUser(User user);
+    User updateUser(User user);
 
-    public List<User> getAllUsers();
+    List<User> getAllUsers();
 
-    public User getUser(Long id);
+    User getUser(long id);
 
-    public Set<Long> getUsersIds();
+    Set<Long> getUsersIds();
 }
