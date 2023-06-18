@@ -2,8 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
@@ -28,4 +30,19 @@ public class UserValidator {
             user.setName(user.getLogin());
         }
     }
+
+    public static void idPresentInStorage(long userId, UserStorage userStorage) {
+        if (!userStorage.getUsersIds().contains(userId)) {
+            log.debug("Пользователь с ID: {}, не зарегистрирован", userId);
+            throw new UserNotFoundException("Пользователя с ID " + userId + " нет в базе");
+        }
+    }
+
+    public static void validId(long id) {
+        if (id <= 0) {
+            log.debug("В запросе передан пользователь с некорректным ID: {}", id);
+            throw new UserNotFoundException("В запросе передан пользователь с некорректным ID:" + id);
+        }
+    }
+
 }
