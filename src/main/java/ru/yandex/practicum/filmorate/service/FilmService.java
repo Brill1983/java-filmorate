@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@Getter
 public class FilmService {
 
     private FilmStorage filmStorage;
@@ -20,6 +18,22 @@ public class FilmService {
     @Autowired
     public FilmService(FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
+    }
+
+    public Film addFilm(Film film) {
+        return filmStorage.addFilm(film);
+    }
+
+    public Film updateFilm(Film film) {
+        return filmStorage.updateFilm(film);
+    }
+
+    public List<Film> getAllFilms() {
+        return filmStorage.getAllFilms();
+    }
+
+    public Film getFilmById(long id) {
+        return filmStorage.getFilm(id);
     }
 
     public Film userLikedFilm(long id, long userId) {

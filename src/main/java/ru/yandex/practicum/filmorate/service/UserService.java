@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@Getter
 public class UserService {
 
     private UserStorage userStorage;
@@ -23,6 +21,22 @@ public class UserService {
     @Autowired
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
+    }
+
+    public User saveUser(User user) {
+        return userStorage.saveUser(user);
+    }
+
+    public User updateUser(User user) {
+        return userStorage.updateUser(user);
+    }
+
+    public List<User> getAllUsers() {
+        return userStorage.getAllUsers();
+    }
+
+    public User getUserById(long id) {
+        return userStorage.getUser(id);
     }
 
     public User addAsFriend(long userId, long friendId) {
