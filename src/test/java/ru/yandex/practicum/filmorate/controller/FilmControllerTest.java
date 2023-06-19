@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,7 +20,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage()));
         film = Film.builder()
                 .name("Белое солнце пустыни")
                 .description("Очень хороший фильм")
@@ -40,8 +43,8 @@ class FilmControllerTest {
     @Test
     void addFilmWithNullNameShouldThrowNullPointerException() {
 
-        final NullPointerException exception = assertThrows(
-                NullPointerException.class,
+        final ValidationException exception = assertThrows(
+                ValidationException.class,
                 () -> {
                     Film film2 = Film.builder()
                             .name(null)
@@ -51,7 +54,7 @@ class FilmControllerTest {
                             .build();
                     filmController.addFilm(film2);
                 });
-        assertEquals(NullPointerException.class, exception.getClass());
+        assertEquals(ValidationException.class, exception.getClass());
     }
 
     @Test
@@ -104,7 +107,7 @@ class FilmControllerTest {
     void updateFilm() {
         filmController.addFilm(film);
         Film film2 = Film.builder()
-                .id(1)
+                .id(1L)
                 .name("Белое солнце пустыни (режиссерская версия)")
                 .description("Очень хороший фильм, а теперь в полной версии")
                 .releaseDate(LocalDate.of(1970, 5, 30))
@@ -120,15 +123,15 @@ class FilmControllerTest {
     void updateFilmWithWrongId() {
         filmController.addFilm(film);
         Film film2 = Film.builder()
-                .id(2)
+                .id(2L)
                 .name("Белое солнце пустыни (режиссерская версия)")
                 .description("Очень хороший фильм, а теперь в полной версии")
                 .releaseDate(LocalDate.of(1970, 5, 30))
                 .duration(83)
                 .build();
 
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
+        final FilmNotFoundException exception = assertThrows(
+                FilmNotFoundException.class,
                 () -> {
                     filmController.updateFilm(film2);
                 });

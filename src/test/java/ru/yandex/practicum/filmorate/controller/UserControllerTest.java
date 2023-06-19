@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,7 +20,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        userController = new UserController(new UserService(new InMemoryUserStorage()));
         user = User.builder()
                 .name("Dima")
                 .email("brill@yandex.ru")
@@ -113,7 +116,7 @@ class UserControllerTest {
     void updateUser() {
         userController.saveUser(user);
         User user2 = User.builder()
-                .id(1)
+                .id(1L)
                 .name("Dmitry")
                 .email("brill1@bk.ru")
                 .birthday(LocalDate.of(1983, 12, 9))
@@ -130,14 +133,14 @@ class UserControllerTest {
     void updateUserWithWrongId() {
         userController.saveUser(user);
         User user2 = User.builder()
-                .id(2)
+                .id(2L)
                 .name("Dmitry")
                 .email("brill1@bk.ru")
                 .birthday(LocalDate.of(1983, 12, 9))
                 .login("Sycophant")
                 .build();
-        final ValidationException exception = assertThrows(
-                ValidationException.class,
+        final UserNotFoundException exception = assertThrows(
+                UserNotFoundException.class,
                 () -> {
                     userController.updateUser(user2);
                 });

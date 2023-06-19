@@ -1,48 +1,57 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmValidator;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RequestMapping("/films")
 @RestController
 @Slf4j
 public class FilmController {
 
-    private int id = 0;
-    private Map<Integer, Film> films = new HashMap<>();
+    private FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) {
-        FilmValidator.valid(film);
-        film.setId(++id);
-        films.put(id, film);
-        log.debug("Фильм с названием '{}' и идентификатором '{}' добавлен", film.getName(), film.getId());
-        return films.get(id);
+        return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
-        if (!films.containsKey(film.getId())) {
-            log.debug("В запросе передан фильм с некорректным ID: {}", film.getId());
-            throw new ValidationException("Фильма с ID " + film.getId() + " в базе не существует");
-        }
-        FilmValidator.valid(film);
-        films.put(film.getId(), film);
-        log.debug("Фильм с идентификатором {} обновлен", film.getId());
-        return films.get(film.getId());
+        return filmService.updateFilm(film);
     }
 
     @GetMapping
     public List<Film> getAllFilms() {
-        log.debug("Количество фильмов в базе {}", films.size());
-        return new ArrayList<>(films.values());
+        return filmService.getAllFilms();
+    }
+
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable long id) {
+        return filmService.getFilmById(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public Film userLikedAFilm(@PathVariable long id, @PathVariable long userId) {
+        return filmService.userLikedFilm(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film deleteLike(@PathVariable long id, @PathVariable long userId) {
+        return filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilmList(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getPopularFilmList(count);
     }
 }
