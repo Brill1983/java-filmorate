@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 @RestControllerAdvice
 public class ErrorHandler {
 
@@ -27,6 +30,9 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleOtherExc(Throwable e) {
-        return new ErrorResponse("Произошла непредвиденная ошибка.");
+        StringWriter errors = new StringWriter();
+        e.printStackTrace(new PrintWriter(errors));
+        return new ErrorResponse(errors.toString());
+//        return new ErrorResponse("Произошла непредвиденная ошибка.");
     }
 }

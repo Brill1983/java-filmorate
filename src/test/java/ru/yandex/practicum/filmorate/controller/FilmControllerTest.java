@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +21,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController(new FilmService(new InMemoryFilmStorage()));
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
         film = Film.builder()
                 .name("Белое солнце пустыни")
                 .description("Очень хороший фильм")
@@ -62,9 +63,7 @@ class FilmControllerTest {
         film.setName("");
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    filmController.addFilm(film);
-                });
+                () -> filmController.addFilm(film));
         assertEquals("Название фильма - обязательно к заполнению", exception.getMessage());
     }
 
@@ -75,9 +74,7 @@ class FilmControllerTest {
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    filmController.addFilm(film);
-                });
+                () -> filmController.addFilm(film));
         assertEquals("Длина описания не должна превышать 200 символов", exception.getMessage());
     }
 
@@ -86,9 +83,7 @@ class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(1894, 10, 4));
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    filmController.addFilm(film);
-                });
+                () -> filmController.addFilm(film));
         assertEquals("Дата релиза фильма не может быть ранее 28.12.1895", exception.getMessage());
     }
 
@@ -97,9 +92,7 @@ class FilmControllerTest {
         film.setDuration(-10);
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    filmController.addFilm(film);
-                });
+                () -> filmController.addFilm(film));
         assertEquals("Продолжительность не может быть 0 или отрицательной", exception.getMessage());
     }
 
@@ -132,9 +125,7 @@ class FilmControllerTest {
 
         final FilmNotFoundException exception = assertThrows(
                 FilmNotFoundException.class,
-                () -> {
-                    filmController.updateFilm(film2);
-                });
+                () -> filmController.updateFilm(film2));
         assertEquals("Фильма с ID 2 в базе не существует", exception.getMessage());
     }
 }

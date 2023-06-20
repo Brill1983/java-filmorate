@@ -46,9 +46,7 @@ class UserControllerTest {
         user.setEmail("");
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    userController.saveUser(user);
-                });
+                () -> userController.saveUser(user));
         assertEquals(ValidationException.class, exception.getClass());
     }
 
@@ -57,9 +55,7 @@ class UserControllerTest {
         user.setEmail("brillyandex.ru");
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    userController.saveUser(user);
-                });
+                () -> userController.saveUser(user));
         assertEquals(ValidationException.class, exception.getClass());
     }
 
@@ -68,9 +64,7 @@ class UserControllerTest {
         user.setLogin("");
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    userController.saveUser(user);
-                });
+                () -> userController.saveUser(user));
         assertEquals(ValidationException.class, exception.getClass());
     }
 
@@ -79,9 +73,7 @@ class UserControllerTest {
         user.setLogin("Bril l");
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    userController.saveUser(user);
-                });
+                () -> userController.saveUser(user));
         assertEquals(ValidationException.class, exception.getClass());
     }
 
@@ -90,9 +82,7 @@ class UserControllerTest {
         user.setBirthday(LocalDate.of(2030, 12, 9));
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                () -> {
-                    userController.saveUser(user);
-                });
+                () -> userController.saveUser(user));
         assertEquals(ValidationException.class, exception.getClass());
     }
 
@@ -141,9 +131,7 @@ class UserControllerTest {
                 .build();
         final UserNotFoundException exception = assertThrows(
                 UserNotFoundException.class,
-                () -> {
-                    userController.updateUser(user2);
-                });
+                () -> userController.updateUser(user2));
         assertEquals("Пользователя с ID 2 нет в базе", exception.getMessage());
     }
 }
