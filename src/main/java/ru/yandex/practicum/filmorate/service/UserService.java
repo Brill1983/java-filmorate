@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -14,14 +14,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
 
-    private UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final UserStorage userStorage;
 
     public User saveUser(User user) {
         return userStorage.saveUser(user);
@@ -40,8 +36,8 @@ public class UserService {
     }
 
     public User addAsFriend(long userId, long friendId) {
-        UserValidator.idPresentInStorage(userId, userStorage);
-        UserValidator.idPresentInStorage(friendId, userStorage);
+        UserValidator.validId(userId, userStorage);
+        UserValidator.validId(friendId, userStorage);
 
         User user = userStorage.getUser(userId);
         user.getFriends().add(friendId);
@@ -53,8 +49,8 @@ public class UserService {
     }
 
     public User deleteFriend(long userId, long friendId) {
-        UserValidator.idPresentInStorage(userId, userStorage);
-        UserValidator.idPresentInStorage(friendId, userStorage);
+        UserValidator.validId(userId, userStorage);
+        UserValidator.validId(friendId, userStorage);
 
         User user = userStorage.getUser(userId);
         user.getFriends().remove(friendId);
@@ -66,7 +62,7 @@ public class UserService {
     }
 
     public List<User> getFriendsList(long id) {
-        UserValidator.idPresentInStorage(id, userStorage);
+        UserValidator.validId(id, userStorage);
 
         List<User> friendsList = new ArrayList<>();
         User user = userStorage.getUser(id);
@@ -78,8 +74,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        UserValidator.idPresentInStorage(id, userStorage);
-        UserValidator.idPresentInStorage(otherId, userStorage);
+        UserValidator.validId(id, userStorage);
+        UserValidator.validId(otherId, userStorage);
 
         Set<Long> intersection = new HashSet<>(userStorage.getUser(id).getFriends());
         Set<Long> otherUserFriends = userStorage.getUser(otherId).getFriends();
