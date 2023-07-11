@@ -32,7 +32,7 @@ public class ErrorHandler {
     public ErrorResponse handleOtherExc(Throwable e) {
         StringWriter errors = new StringWriter();
         e.printStackTrace(new PrintWriter(errors));
-        return new ErrorResponse(errors.toString());
-//        return new ErrorResponse("Произошла непредвиденная ошибка.");
+        return new ErrorResponse(errors.toString()); // для вывода трейса или
+//        return new ErrorResponse("Произошла непредвиденная ошибка."); // для вывода сообщения
     }
 }

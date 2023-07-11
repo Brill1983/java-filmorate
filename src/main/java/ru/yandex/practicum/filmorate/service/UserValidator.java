@@ -1,18 +1,27 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class UserValidator {
 
-    public static void valid(User user) {
+    private final UserStorage userStorage;
+
+    public void valid(User user) {
         if (StringUtils.isBlank(user.getEmail()) || StringUtils.isBlank(user.getLogin())) {
             log.debug("Передан пользователь с пустым email: {}, или логином: {}", user.getEmail(), user.getLogin());
             throw new ValidationException("Поля email и логин - обязательны к заполнению");
@@ -31,9 +40,10 @@ public class UserValidator {
         }
     }
 
-    public static void validId(long userId, UserStorage userStorage) {
-        if (!userStorage.getUsersIds().contains(userId)) {
-            log.debug("Пользователь с ID: {}, не зарегистрирован", userId);
+    public void validId(long userId) {
+        Optional<User> user = userStorage.getUserById(userId);
+        if(user.isEmpty()) {
+            log.debug("Пользователь с ID: {}, отсутствует в базе", userId);
             throw new UserNotFoundException("Пользователя с ID " + userId + " нет в базе");
         }
     }
