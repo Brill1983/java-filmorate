@@ -2,8 +2,7 @@
 
 https://dbdiagram.io/d/64a2941502bd1c4a5e670659
 
-![filmorate (1)](https://github.com/Brill1983/java-filmorate/assets/123554407/5c037ff0-2aee-43c1-9a96-a9bc7ee7684e)
-
+![scheme.png](scheme.png)
 
 ## Описание диаграммы базы фильмов\пользователей
 

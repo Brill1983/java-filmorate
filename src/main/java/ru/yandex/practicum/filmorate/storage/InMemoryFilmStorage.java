@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.service.FilmValidator;
 
 import java.util.*;
 
-@Component
+//@Component
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
 
@@ -17,7 +17,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        FilmValidator.valid(film);
+//        FilmValidator.valid(film);
         film.setId(++id);
         films.put(id, film);
         log.debug("Фильм с названием '{}' и идентификатором '{}' добавлен", film.getName(), film.getId());
@@ -30,7 +30,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.debug("В запросе передан фильм с некорректным ID: {}", film.getId());
             throw new FilmNotFoundException("Фильма с ID " + film.getId() + " в базе не существует");
         }
-        FilmValidator.valid(film);
+//        FilmValidator.valid(film);
         films.put(film.getId(), film);
         log.debug("Фильм с идентификатором {} обновлен", film.getId());
         return films.get(film.getId());
@@ -43,16 +43,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilm(long id) {
+    public Optional<Film>  getFilmById(long id) {
         if (!films.containsKey(id)) {
             log.debug("В запросе передан фильм с некорректным ID: {}", id);
             throw new FilmNotFoundException("Фильма с ID " + id + " в базе не существует");
         }
-        return films.get(id);
-    }
-
-    @Override
-    public Set<Long> getFilmsIds() {
-        return films.keySet();
+//        return films.get(id);
+        return null;
     }
 }
