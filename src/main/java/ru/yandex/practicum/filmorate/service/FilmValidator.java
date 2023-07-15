@@ -11,13 +11,11 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.LikesStorage;
 import ru.yandex.practicum.filmorate.storage.MpaCategoryStorage;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,7 +26,6 @@ public class FilmValidator {
     private final GenreStorage genreStorage;
     private final MpaCategoryStorage categoryStorage;
     private final FilmStorage filmStorage;
-    private final LikesStorage likesStorage;
 
     public void valid(Film film) {
         if (StringUtils.isBlank(film.getName())) {
@@ -48,10 +45,10 @@ public class FilmValidator {
             throw new ValidationException("Продолжительность не может быть 0 или отрицательной");
         }
         List<Genre> filmGenreList = film.getGenres();
-        if(!filmGenreList.isEmpty()) {
+        if (!filmGenreList.isEmpty()) {
             List<Genre> genresInDb = genreStorage.findAllGenres();
             for (Genre genre : filmGenreList) {
-                if(!genresInDb.contains(genre)) {
+                if (!genresInDb.contains(genre)) {
                     log.debug("В запросе передан фильм с неправильным id жанра {}", genre.getId());
                     throw new ValidationException("Жанр должен соответствовать базе данных");
                 }
@@ -59,7 +56,7 @@ public class FilmValidator {
         }
         if (film.getCategoryMpa() != null) {
             List<MpaCategory> mpaCategories = categoryStorage.findAllMpaCategories();
-            if(!mpaCategories.contains(film.getCategoryMpa())) {
+            if (!mpaCategories.contains(film.getCategoryMpa())) {
                 log.debug("В запросе передан фильм с неправильным id категории MPA {}", film.getCategoryMpa().getId());
                 throw new ValidationException("Категория MPA должен соответствовать базе данных");
             }
@@ -68,7 +65,7 @@ public class FilmValidator {
 
     public void validId(long id) {
         Optional<Film> film = filmStorage.getFilmById(id);
-        if(film.isEmpty()) {
+        if (film.isEmpty()) {
             log.debug("В фильм с ID: {}, отсутствует в базе", id);
             throw new FilmNotFoundException("Фильма с ID " + id + " нет в базе");
         }

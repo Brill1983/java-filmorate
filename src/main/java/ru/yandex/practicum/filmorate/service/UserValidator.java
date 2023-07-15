@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -42,7 +40,7 @@ public class UserValidator {
 
     public void validId(long userId) {
         Optional<User> user = userStorage.getUserById(userId);
-        if(user.isEmpty()) {
+        if (user.isEmpty()) {
             log.debug("Пользователь с ID: {}, отсутствует в базе", userId);
             throw new UserNotFoundException("Пользователя с ID " + userId + " нет в базе");
         }

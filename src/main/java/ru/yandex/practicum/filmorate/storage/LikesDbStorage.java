@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,7 +14,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class LikesDbStorage implements LikesStorage{
+public class LikesDbStorage implements LikesStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 
@@ -44,11 +43,11 @@ public class LikesDbStorage implements LikesStorage{
 
 
     @Override
-    public boolean checkUserLikedFilm (long filmId, long userId) {
-        String sql = "SELECT USER_ID FROM LIKES WHERE FILM_ID = :id AND USER_ID = :userId";
+    public boolean checkUserLikedFilm(long filmId, long userId) {
+        String sql = "SELECT USER_ID FROM LIKES WHERE FILM_ID = :filmId AND USER_ID = :userId";
         List<Long> likesList = jdbcTemplate.query(sql, Map.of("filmId", filmId, "userId", userId), (rs, rowNum) -> makeId(rs));
         log.info("Для фильма {} найдено {} лайков", filmId, likesList.size());
-        if(likesList.size() == 0) {
+        if (likesList.size() == 0) {
             return false;
         } else {
             return true;

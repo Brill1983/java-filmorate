@@ -6,13 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikesStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,7 +16,6 @@ import java.util.stream.Collectors;
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
     private final FilmValidator filmValidator;
     private final UserValidator userValidator;
     private final LikesStorage likesStorage;
@@ -48,7 +43,7 @@ public class FilmService {
     public void userLikedFilm(long filmId, long userId) {
         userValidator.validId(userId);
         filmValidator.validId(filmId);
-        if(likesStorage.checkUserLikedFilm(filmId, userId)) {
+        if (likesStorage.checkUserLikedFilm(filmId, userId)) {
             log.info("У фильма с ID {} уже есть лайк от пользователя {}", filmId, userId);
         } else {
             likesStorage.userLikedFilm(filmId, userId);
@@ -60,7 +55,7 @@ public class FilmService {
         userValidator.validId(userId);
         filmValidator.validId(filmId);
 
-        if(likesStorage.checkUserLikedFilm(filmId, userId)) {
+        if (likesStorage.checkUserLikedFilm(filmId, userId)) {
             log.info("У фильма с ID {} есть лайк от пользователя {}, можно смело удалять", filmId, userId);
             likesStorage.deleteLike(filmId, userId);
         } else {
@@ -69,7 +64,7 @@ public class FilmService {
     }
 
 
-    public List<Film> getPopularFilmList(int count) { //TODO
+    public List<Film> getPopularFilmList(int count) {
         if (count <= 0) {
             log.debug("Было передано некорректное значение count {}, применено значение по умолчанию", count);
             count = 10;

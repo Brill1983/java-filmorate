@@ -8,6 +8,7 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Genre {
 
     private int id;

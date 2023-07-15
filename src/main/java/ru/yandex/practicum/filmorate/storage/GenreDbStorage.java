@@ -18,7 +18,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class GenreDbStorage implements GenreStorage{
+public class GenreDbStorage implements GenreStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 
@@ -34,7 +34,7 @@ public class GenreDbStorage implements GenreStorage{
     public Optional<Genre> findGenreById(int id) {
         String sql = "select * from GENRES where GENRE_ID = :id";
         List<Genre> genreList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeGenre(rs));
-        if(!genreList.isEmpty()) {
+        if (!genreList.isEmpty()) {
             log.info("Найдена жанр с ID: {} и названием {} ", genreList.get(0).getId(), genreList.get(0).getName());
             return Optional.of(genreList.get(0));
         } else {
@@ -50,14 +50,6 @@ public class GenreDbStorage implements GenreStorage{
         log.info("Для фильма {} найдено жанров {}", id, genreList.size());
         return genreList;
     }
-
-//    @Override // TODO удалить
-//    public List<Integer> findGenresIdsByFilmId(int id) {
-//        String sql = "SELECT GENRE_ID FROM FILM_GENRES WHERE FILM_ID = :id";
-//        List<Integer> genreIdsList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeId(rs));
-//        log.info("Для фильма {} найдено {} ID жанров", id, genreIdsList.size());
-//        return genreIdsList;
-//    }
 
     @Override
     public Genre createNewGenre(Genre genre) {
@@ -75,7 +67,7 @@ public class GenreDbStorage implements GenreStorage{
     }
 
     @Override
-    public boolean deleteGenresOfFilm (long id) {
+    public boolean deleteGenresOfFilm(long id) {
         String sql = "DELETE FROM FILM_GENRES WHERE FILM_ID = :id";
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("id", id);
@@ -97,8 +89,6 @@ public class GenreDbStorage implements GenreStorage{
         log.info("Добавлен жанр с ID: {} для фильма c ID {}", genreId, filmId);
     }
 
-
-    // вспомогательные методы
     private Genre makeGenre(ResultSet rs) throws SQLException {
         Genre genre = new Genre(
                 rs.getInt("GENRE_ID"),
@@ -107,8 +97,4 @@ public class GenreDbStorage implements GenreStorage{
         return genre;
     }
 
-    private Integer makeId(ResultSet rs) throws SQLException {
-        Integer id = rs.getInt("GENRE_ID");
-        return id;
-    }
 }

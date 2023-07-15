@@ -2,13 +2,11 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
 
 import java.sql.ResultSet;
@@ -20,7 +18,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class MpaCategoryDbStorage implements MpaCategoryStorage{
+public class MpaCategoryDbStorage implements MpaCategoryStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 
@@ -36,7 +34,7 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage{
     public Optional<MpaCategory> findMpaCategoryById(int id) {
         String sql = "select * from MPA_CATEGORIES where CATEGORY_MPA_ID = :id";
         List<MpaCategory> mpaCategoryList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeMpaCategory(rs));
-        if(!mpaCategoryList.isEmpty()) {
+        if (!mpaCategoryList.isEmpty()) {
             log.info("Найдена категория MPA с ID: {} и названием {} ", mpaCategoryList.get(0).getId(), mpaCategoryList.get(0).getName());
             return Optional.of(mpaCategoryList.get(0));
         } else {
@@ -60,9 +58,7 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage{
         return mpaCategory;
     }
 
-    // вспомогательные методы
-
-    private MpaCategory makeMpaCategory (ResultSet rs) throws SQLException {
+    private MpaCategory makeMpaCategory(ResultSet rs) throws SQLException {
         Integer id = rs.getInt("CATEGORY_MPA_ID");
         String name = rs.getString("NAME");
         return new MpaCategory(id, name);

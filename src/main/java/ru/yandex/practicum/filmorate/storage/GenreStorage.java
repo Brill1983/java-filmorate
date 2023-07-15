@@ -15,9 +15,7 @@ public interface GenreStorage {
 
     Genre createNewGenre(Genre genre);
 
-    boolean deleteGenresOfFilm (long id);
-
-//    List<Integer> findGenresIdsByFilmId(int id);
+    boolean deleteGenresOfFilm(long id);
 
     void addGenresForFilm(Integer genreId, Long filmId);
 }

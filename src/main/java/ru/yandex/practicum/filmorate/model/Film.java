@@ -4,9 +4,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Setter
 @Getter
@@ -23,7 +21,6 @@ public class Film {
     private int duration;
     private MpaCategory categoryMpa;
     private List<Genre> genres = new ArrayList<>();
-//    private Set<Long> likes = new HashSet<>(); // TODO delete
 
     public Film(long id, String name, String description, LocalDate releaseDate, int duration, MpaCategory categoryMpa) {
         this.id = id;

@@ -20,15 +20,15 @@ public class MpaCategoryService {
 
     public List<MpaCategory> findAllMpaCategories() {
         return mpaCategoryDbStorage.findAllMpaCategories();
-    };
+    }
 
-    public MpaCategory findMpaCategoryById(int id) { // TODO check how works validation
-        MpaCategory mpaCategory = mpaCategoryDbStorage.findMpaCategoryById(id).orElseThrow(() -> new MpaCategoryNotFoundException("Категории с ID " + id + " нет в базе"));
-        return mpaCategory;
-    };
+    public MpaCategory findMpaCategoryById(int id) {
+        return mpaCategoryDbStorage.findMpaCategoryById(id).orElseThrow(() ->
+                new MpaCategoryNotFoundException("Категории с ID " + id + " нет в базе"));
+    }
 
-    public MpaCategory makeMpaCategory(MpaCategory mpaCategory) { // TODO check how works validation
-        if(StringUtils.isBlank(mpaCategory.getName())) {
+    public MpaCategory makeMpaCategory(MpaCategory mpaCategory) { // не нужен
+        if (StringUtils.isBlank(mpaCategory.getName())) {
             throw new ValidationException("Название категории MPA обзятельно для заполнения");
         }
         return mpaCategoryDbStorage.createNewMpaCategory(mpaCategory);

@@ -44,7 +44,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        String sql = "UPDATE USER SET EMAIL = :email, NAME = :name, LOGIN = :login, " +
+        String sql = "UPDATE USERS SET EMAIL = :email, NAME = :name, LOGIN = :login, " +
                 "BIRTHDAY = :birthday WHERE USER_ID = :id";
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("id", user.getId());
@@ -79,13 +79,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     private User makeUser(ResultSet rs) throws SQLException {
-        User user = new User(
+        return new User(
                 rs.getLong("USER_ID"),
                 rs.getString("EMAIL"),
                 rs.getString("LOGIN"),
                 rs.getString("NAME"),
                 rs.getDate("BIRTHDAY").toLocalDate()
         );
-        return user;
     }
 }

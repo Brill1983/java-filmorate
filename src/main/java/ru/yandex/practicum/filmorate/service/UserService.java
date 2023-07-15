@@ -5,12 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +18,7 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final UserValidator userValidator;
+    private final FriendsStorage friendsStorage;
 
     public User saveUser(User user) {
         userValidator.valid(user);
@@ -40,55 +39,35 @@ public class UserService {
         return userStorage.getUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователя с ID " + userId + " нет в базе"));
     }
 
-    public User addAsFriend(long userId, long friendId) {
+    public boolean addAsFriend(long userId, long friendId) {
         userValidator.validId(userId);
         userValidator.validId(friendId);
-
-//        User user = userStorage.getUserById(userId);
-//        user.getFriends().add(friendId);
-//        log.debug("Пользователь с ID {}, добавлен в друзья пользователя {}", friendId, userId);
-//        User friendUser = userStorage.getUserById(friendId);
-//        friendUser.getFriends().add(userId);
-//        log.debug("Пользователь с ID {}, добавлен в друзья пользователя {}", userId, friendId);
-        return null;
+        List<Long> friendsIdList = friendsStorage.getFriendsList(userId)
+                .stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+        if (!friendsIdList.contains(friendId)) {
+            friendsStorage.addAsFriend(userId, friendId);
+            return true;
+        }
+        log.info("Пользователь с ID {} уже есть друг c ID {}", userId, friendId);
+        return false;
     }
 
-    public User deleteFriend(long userId, long friendId) {
-//        UserValidator.validId(userId, userStorage);
-//        UserValidator.validId(friendId, userStorage);
-
-//        User user = userStorage.getUserById(userId);
-//        user.getFriends().remove(friendId);
-//        log.debug("Пользователь с ID {}, удален из друзей пользователя {}", friendId, userId);
-//        User friendUser = userStorage.getUserById(friendId);
-//        friendUser.getFriends().remove(userId);
-//        log.debug("Пользователь с ID {}, удален из друзей пользователя {}", userId, friendId);
-        return null;
+    public boolean deleteFriend(long userId, long friendId) {
+        userValidator.validId(userId);
+        userValidator.validId(friendId);
+        return friendsStorage.deleteFriend(userId, friendId);
     }
 
-    public List<User> getFriendsList(long id) {
-//        UserValidator.validId(id, userStorage);
-
-//        List<User> friendsList = new ArrayList<>();
-//        User user = userStorage.getUserById(id);
-//        for (Long friendId : user.getFriends()) {
-//            friendsList.add(userStorage.getUserById(friendId));
-//        }
-//        log.debug("У пользователя с ID {}, в списке {} друзей", id, friendsList.size());
-        return null;
+    public List<User> getFriendsList(long userId) {
+        userValidator.validId(userId);
+        return friendsStorage.getFriendsList(userId);
     }
 
-    public List<User> getCommonFriends(long id, long otherId) {
-//        UserValidator.validId(id, userStorage);
-//        UserValidator.validId(otherId, userStorage);
-
-//        Set<Long> intersection = new HashSet<>(userStorage.getUserById(id).getFriends());
-//        Set<Long> otherUserFriends = userStorage.getUserById(otherId).getFriends();
-//        intersection.retainAll(otherUserFriends);
-//        log.debug("У пользователей с ID {} и {}, в списке {} общих друзей", id, otherId, intersection.size());
-//        return intersection.stream()
-//                .map(userId -> userStorage.getUserById(userId))
-//                .collect(Collectors.toList());
-        return null;
+    public List<User> getCommonFriends(long userId, long otherId) {
+        userValidator.validId(userId);
+        userValidator.validId(otherId);
+        return friendsStorage.getCommonFriends(userId, otherId);
     }
 }

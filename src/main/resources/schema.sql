@@ -61,9 +61,8 @@ create table if not exists LIKES
 
 create table if not exists FRIENDS
 (
-    USER_ID   INTEGER               not null,
-    FRIEND_ID INTEGER               not null,
-    APPROVED  BOOLEAN default FALSE not null,
+    USER_ID   INTEGER not null,
+    FRIEND_ID INTEGER not null,
     constraint "FRIENDS_USERS_USER_ID_fk"
         foreign key (USER_ID) references USERS,
     constraint "FRIENDS_USERS_USER_ID_fk2"

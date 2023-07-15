@@ -97,12 +97,11 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularFilmList(int count) {
         String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, " +
                 "F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME, COUNT(L.USER_ID) " +
-                "FROM FILMS AS F JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID" +
-                "JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID" +
-                "GROUP BY F.FILM_ID" +
-                "ORDER BY COUNT(L.USER_ID) DESC" +
-                "LIMIT :count";
-        List<Film> filmList = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+                "FROM FILMS AS F JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
+                "JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.USER_ID) DESC LIMIT :count";
+        List<Film> filmList = jdbcTemplate.query(sql, Map.of("count", count), (rs, rowNum) -> makeFilm(rs));
         log.info("По запросу на {} самых популярных фильмов сформиован список из {} фильмов", count, filmList.size());
         return filmList;
     }

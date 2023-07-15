@@ -14,17 +14,17 @@ import java.util.List;
 @AllArgsConstructor
 public class GenreController {
 
-    private GenreService genreService;
+    private final GenreService genreService;
 
     @GetMapping
     public List<Genre> findAllGenres() {
         return genreService.findAllGenres();
-    };
+    }
 
     @GetMapping("/{id}")
-    Genre findMpaCategoryById(@PathVariable int id) {
+    Genre findGenreById(@PathVariable int id) {
         return genreService.findGenreById(id);
-    };
+    }
 
     @GetMapping("/film/{id}")
     public List<Genre> findGenresByFilmId(@PathVariable int id) {
