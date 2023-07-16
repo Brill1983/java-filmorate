@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import java.util.List;
 
 @Service
-@Slf4j
 @AllArgsConstructor
 public class GenreService {
 

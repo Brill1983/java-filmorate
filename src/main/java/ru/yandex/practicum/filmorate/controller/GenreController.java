@@ -10,7 +10,6 @@ import java.util.List;
 
 @RequestMapping("/genres")
 @RestController
-@Slf4j
 @AllArgsConstructor
 public class GenreController {
 
@@ -22,7 +21,7 @@ public class GenreController {
     }
 
     @GetMapping("/{id}")
-    Genre findGenreById(@PathVariable int id) {
+    public Genre findGenreById(@PathVariable int id) {
         return genreService.findGenreById(id);
     }
 

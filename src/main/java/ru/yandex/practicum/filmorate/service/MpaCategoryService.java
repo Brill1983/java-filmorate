@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.MpaCategoryDbStorage;
 import java.util.List;
 
 @Service
-@Slf4j
 @AllArgsConstructor
 public class MpaCategoryService {
 

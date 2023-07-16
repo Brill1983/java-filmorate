@@ -116,9 +116,6 @@ public class FilmDbStorage implements FilmStorage {
 
         Set<Genre> genresSet = new HashSet<>(genreStorage.findGenresByFilmId(filmId));
 
-        int rate = rs.getInt("RT");
-        System.out.println(rate);
-
         Film film = new Film(
                 filmId,
                 rs.getString("FILM_NAME"),
