@@ -1,8 +1,8 @@
 # java-filmorate
 
-![DB scheme.png](DB%20scheme.png)
+![Scheme.png](Scheme.png)
 
-## Описание диаграммы базы фильмов\пользователей
+## Описание диаграммы базы фильмов пользователей
 
 База данных состоит из следующих таблиц:
 1.	films – данные по внесенным в базу фильмам
@@ -22,6 +22,7 @@
 4.  description - описание фильма
 5.  category_mpa_id (FK) – идентификатор рейтинга
 6.  duration - продолжительность в минутах
+7.  rate - рейтинг популярности фильма при создании
 
 ### `likes` 
 1.	film_id (FK) – идентификатор  фильма
@@ -53,26 +54,39 @@
 ## Примеры запросов:
 1. Получить данные по фильму с ID 2, включая наименование категоии МРА:
 ```
-   SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME 
-   FROM FILMS AS F 
-   JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID 
-   WHERE F.FILM_ID = 2;
+    SELECT F.FILM_ID, 
+        F.NAME AS FILM_NAME, 
+        F.RELEASE_DATE, 
+        F.DESCRIPTION, 
+        F.DURATION, 
+        F.CATEGORY_MPA_ID, 
+        M.NAME AS MPA_NAME 
+    FROM FILMS AS F 
+    JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID 
+    WHERE F.FILM_ID = 2;
    ```
 2. Получить список из 10 самых популярных фильмов:
 ```
-  SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, 
-         F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME, COUNT(L.USER_ID)
-  FROM FILMS AS F
-  JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID 
-  JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID
-  GROUP BY F.FILM_ID
-  ORDER BY COUNT(L.USER_ID) DESC 
-  LIMIT 10;
+    SELECT F.FILM_ID, 
+        F.NAME AS FILM_NAME, 
+        F.RELEASE_DATE, 
+        F.DESCRIPTION, 
+        F.DURATION, 
+        F.CATEGORY_MPA_ID, 
+        M.NAME AS MPA_NAME, 
+        COUNT(L.USER_ID) + F.RATE AS RT
+    FROM FILMS AS F 
+    JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID
+    LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID
+    GROUP BY F.FILM_ID
+    ORDER BY RT DESC
+    LIMIT 10;
   ```
 
 3. Получить список из общих друзей пользователя с ID 1 и пользователя с ID 2:
 ```
-  SELECT * FROM USERS WHERE USER_ID IN (
+    SELECT * FROM USERS 
+    WHERE USER_ID IN (
         SELECT FRIEND_ID 
         FROM FRIENDS 
         WHERE USER_ID = 1 

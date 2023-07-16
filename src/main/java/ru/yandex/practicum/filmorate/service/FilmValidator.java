@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.MpaCategoryStorage;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -44,7 +45,7 @@ public class FilmValidator {
             log.debug("В запросе передан фильм с продолжительностью {}", film.getDuration());
             throw new ValidationException("Продолжительность не может быть 0 или отрицательной");
         }
-        List<Genre> filmGenreList = film.getGenres();
+        Set<Genre> filmGenreList = film.getGenres();
         if (!filmGenreList.isEmpty()) {
             List<Genre> genresInDb = genreStorage.findAllGenres();
             for (Genre genre : filmGenreList) {
@@ -54,10 +55,10 @@ public class FilmValidator {
                 }
             }
         }
-        if (film.getCategoryMpa() != null) {
+        if (film.getMpa() != null) {
             List<MpaCategory> mpaCategories = categoryStorage.findAllMpaCategories();
-            if (!mpaCategories.contains(film.getCategoryMpa())) {
-                log.debug("В запросе передан фильм с неправильным id категории MPA {}", film.getCategoryMpa().getId());
+            if (!mpaCategories.contains(film.getMpa())) {
+                log.debug("В запросе передан фильм с неправильным id категории MPA {}", film.getMpa().getId());
                 throw new ValidationException("Категория MPA должен соответствовать базе данных");
             }
         }
