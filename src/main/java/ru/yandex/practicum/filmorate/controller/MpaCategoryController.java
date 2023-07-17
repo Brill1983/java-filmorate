@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.MpaCategory;
 import ru.yandex.practicum.filmorate.service.MpaCategoryService;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequestMapping("/mpa")
 @RestController
@@ -15,17 +14,17 @@ import java.util.Optional;
 @AllArgsConstructor
 public class MpaCategoryController {
 
-    private MpaCategoryService mpaCategoryService;
+    private final MpaCategoryService mpaCategoryService;
 
     @GetMapping
     public List<MpaCategory> findAllMpaCategories() {
         return mpaCategoryService.findAllMpaCategories();
-    };
+    }
 
     @GetMapping("/{id}")
     MpaCategory findMpaCategoryById(@PathVariable int id) {
         return mpaCategoryService.findMpaCategoryById(id);
-    };
+    }
 
     @PostMapping
     public MpaCategory addMpaCategory(@RequestBody MpaCategory mpaCategory) {

@@ -1,7 +1,7 @@
 create table if not exists GENRES
 (
     GENRE_ID INTEGER auto_increment,
-    NAME     VARCHAR,
+    NAME     CHARACTER VARYING not null,
     constraint "GENRES_pk"
         primary key (GENRE_ID)
 );
@@ -9,7 +9,7 @@ create table if not exists GENRES
 create table if not exists MPA_CATEGORIES
 (
     CATEGORY_MPA_ID INTEGER auto_increment,
-    NAME            VARCHAR not null,
+    NAME            CHARACTER VARYING not null,
     constraint "MPA_CATEGORIES_pk"
         primary key (CATEGORY_MPA_ID)
 );
@@ -22,6 +22,7 @@ create table if not exists FILMS
     DESCRIPTION     CHARACTER VARYING,
     CATEGORY_MPA_ID INTEGER,
     DURATION        INTEGER,
+    RATE            INTEGER,
     constraint "FILMS_pk"
         primary key (FILM_ID),
     constraint FILMS_MPA_CATEGORIES_CATEGORY_MPA_ID_FK
@@ -61,9 +62,8 @@ create table if not exists LIKES
 
 create table if not exists FRIENDS
 (
-    USER_ID   INTEGER               not null,
-    FRIEND_ID INTEGER               not null,
-    APPROVED  BOOLEAN default FALSE not null,
+    USER_ID   INTEGER not null,
+    FRIEND_ID INTEGER not null,
     constraint "FRIENDS_USERS_USER_ID_fk"
         foreign key (USER_ID) references USERS,
     constraint "FRIENDS_USERS_USER_ID_fk2"

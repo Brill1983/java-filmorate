@@ -2,14 +2,12 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaCategory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +18,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class GenreDbStorage implements GenreStorage{
+public class GenreDbStorage implements GenreStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 
@@ -36,7 +34,7 @@ public class GenreDbStorage implements GenreStorage{
     public Optional<Genre> findGenreById(int id) {
         String sql = "select * from GENRES where GENRE_ID = :id";
         List<Genre> genreList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeGenre(rs));
-        if(!genreList.isEmpty()) {
+        if (!genreList.isEmpty()) {
             log.info("Найдена жанр с ID: {} и названием {} ", genreList.get(0).getId(), genreList.get(0).getName());
             return Optional.of(genreList.get(0));
         } else {
@@ -46,19 +44,11 @@ public class GenreDbStorage implements GenreStorage{
     }
 
     @Override
-    public List<Genre> findGenresByFilmId(int id) {
+    public List<Genre> findGenresByFilmId(long id) {
         String sql = "SELECT FG.GENRE_ID, G2.NAME FROM FILM_GENRES AS FG JOIN GENRES AS G2 on FG.GENRE_ID = G2.GENRE_ID WHERE FG.FILM_ID = :id";
         List<Genre> genreList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeGenre(rs));
         log.info("Для фильма {} найдено жанров {}", id, genreList.size());
         return genreList;
-    }
-
-    @Override
-    public List<Integer> findGenresIdsByFilmId(int id) {
-        String sql = "SELECT GENRE_ID FROM FILM_GENRES WHERE FILM_ID = :id";
-        List<Integer> genreIdsList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeId(rs));
-        log.info("Для фильма {} найдено {} ID жанров", id, genreIdsList.size());
-        return genreIdsList;
     }
 
     @Override
@@ -77,6 +67,17 @@ public class GenreDbStorage implements GenreStorage{
     }
 
     @Override
+    public boolean deleteGenresOfFilm(long id) {
+        String sql = "DELETE FROM FILM_GENRES WHERE FILM_ID = :id";
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("id", id);
+
+        int count = jdbcTemplate.update(sql, map);
+        log.info("Удалено жанров {} для фильма c ID {}", count, id);
+        return count > 0;
+    }
+
+    @Override
     public void addGenresForFilm(Integer genreId, Long filmId) {
         String sql = "INSERT INTO FILM_GENRES(FILM_ID, GENRE_ID) VALUES ( :filmId, :genreId )";
 
@@ -84,12 +85,10 @@ public class GenreDbStorage implements GenreStorage{
         map.addValue("filmId", filmId);
         map.addValue("genreId", genreId);
 
-        int rowsNum = jdbcTemplate.update(sql, map);
+        jdbcTemplate.update(sql, map);
         log.info("Добавлен жанр с ID: {} для фильма c ID {}", genreId, filmId);
     }
 
-
-    // вспомогательные методы
     private Genre makeGenre(ResultSet rs) throws SQLException {
         Genre genre = new Genre(
                 rs.getInt("GENRE_ID"),
@@ -98,8 +97,4 @@ public class GenreDbStorage implements GenreStorage{
         return genre;
     }
 
-    private Integer makeId(ResultSet rs) throws SQLException {
-        Integer id = rs.getInt("GENRE_ID");
-        return id;
-    }
 }

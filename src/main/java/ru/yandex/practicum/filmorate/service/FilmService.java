@@ -6,12 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.LikesStorage;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -19,16 +16,19 @@ import java.util.stream.Collectors;
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
     private final FilmValidator filmValidator;
-//    private final GenreStorage genreStorage;
+    private final UserValidator userValidator;
+    private final LikesStorage likesStorage;
+
 
     public Film addFilm(Film film) {
         filmValidator.valid(film);
-        return filmStorage.addFilm(film);
+        Film film2 = filmStorage.addFilm(film);
+        return film2;
     }
 
-    public Film updateFilm(Film film) { //TODO
+    public Film updateFilm(Film film) {
+        filmValidator.validId(film.getId());
         filmValidator.valid(film);
         return filmStorage.updateFilm(film);
     }
@@ -37,41 +37,39 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
-    public Film getFilmById(long id) { // TODO check how works validation
-        Film film = filmStorage.getFilmById(id).orElseThrow(() -> new FilmNotFoundException("Фильма с ID " + id + " нет в базе"));
-        return film;
+    public Film getFilmById(long filmId) {
+        return filmStorage.getFilmById(filmId).orElseThrow(() -> new FilmNotFoundException("Фильма с ID " + filmId + " нет в базе"));
     }
 
-    public Film userLikedFilm(long id, long userId) { //TODO
-        UserValidator.validId(userId, userStorage);
-        filmValidator.validId(id);
-
-//        Film film = filmStorage.getFilm(id);
-//        film.getLikes().add(userId);
-        log.debug("Фильму {} добавлен лайк от пользователя {}", id, userId);
-        return null /*film*/;
+    public void userLikedFilm(long filmId, long userId) {
+        userValidator.validId(userId);
+        filmValidator.validId(filmId);
+        if (likesStorage.checkUserLikedFilm(filmId, userId)) {
+            log.info("У фильма с ID {} уже есть лайк от пользователя {}", filmId, userId);
+        } else {
+            likesStorage.userLikedFilm(filmId, userId);
+            log.info("Фильму с ID {} добавлен лайк от пользователя {}", filmId, userId);
+        }
     }
 
-    public Film deleteLike(long id, long userId) { //TODO
-        UserValidator.validId(userId, userStorage); //TODO исправить после создания UserDbStorage
-        filmValidator.validId(id);
+    public void deleteLike(long filmId, long userId) {
+        userValidator.validId(userId);
+        filmValidator.validId(filmId);
 
-//        Film film = filmStorage.getFilm(id);
-//        film.getLikes().remove(userId);
-        log.debug("У фильма {} удален лайк от пользователя {}", id, userId);
-        return null /*film*/;
+        if (likesStorage.checkUserLikedFilm(filmId, userId)) {
+            log.info("У фильма с ID {} есть лайк от пользователя {}, можно смело удалять", filmId, userId);
+            likesStorage.deleteLike(filmId, userId);
+        } else {
+            log.info("У фильма с ID {} нет лайка от пользователя {}, удалять нечего", filmId, userId);
+        }
     }
 
-    public List<Film> getPopularFilmList(int count) { //TODO
+
+    public List<Film> getPopularFilmList(int count) {
         if (count <= 0) {
             log.debug("Было передано некорректное значение count {}, применено значение по умолчанию", count);
             count = 10;
         }
-        List<Film> films = filmStorage.getAllFilms().stream()
-                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
-        log.debug("По запросу на {} топ фильмов, создан список из топ {} фильмов", count, films.size());
-        return films;
+        return filmStorage.getPopularFilmList(count);
     }
 }
