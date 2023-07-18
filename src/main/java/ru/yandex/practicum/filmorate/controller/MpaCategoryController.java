@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
 import ru.yandex.practicum.filmorate.service.MpaCategoryService;
@@ -10,7 +9,6 @@ import java.util.List;
 
 @RequestMapping("/mpa")
 @RestController
-@Slf4j
 @AllArgsConstructor
 public class MpaCategoryController {
 
@@ -22,7 +20,7 @@ public class MpaCategoryController {
     }
 
     @GetMapping("/{id}")
-    MpaCategory findMpaCategoryById(@PathVariable int id) {
+    public MpaCategory findMpaCategoryById(@PathVariable int id) {
         return mpaCategoryService.findMpaCategoryById(id);
     }
 

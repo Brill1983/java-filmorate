@@ -45,7 +45,9 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public List<Genre> findGenresByFilmId(long id) {
-        String sql = "SELECT FG.GENRE_ID, G2.NAME FROM FILM_GENRES AS FG JOIN GENRES AS G2 on FG.GENRE_ID = G2.GENRE_ID WHERE FG.FILM_ID = :id";
+        String sql = "SELECT FG.GENRE_ID, G2.NAME FROM FILM_GENRES AS FG " +
+                "JOIN GENRES AS G2 on FG.GENRE_ID = G2.GENRE_ID " +
+                "WHERE FG.FILM_ID = :id ORDER BY G2.GENRE_ID";
         List<Genre> genreList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeGenre(rs));
         log.info("Для фильма {} найдено жанров {}", id, genreList.size());
         return genreList;
