@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.MpaCategory;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -22,6 +23,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
     private final GenreStorage genreStorage;
+    private final MpaCategoryStorage mpaCategoryStorage;
 
     @Override
     public Film addFilm(Film film) {
@@ -43,21 +45,26 @@ public class FilmDbStorage implements FilmStorage {
         map.addValue("duration", film.getDuration());
         map.addValue("rate", film.getRate());
 
-
         jdbcTemplate.update(sql, map, keyHolder);
         Long filmId = keyHolder.getKey().longValue();
-        film.setId(filmId);
 
-        for (Genre genre : film.getGenres()) {
-            genreStorage.addGenresForFilm(genre.getId(), filmId);
+        film.setId(filmId);
+        List<Integer> filmGenreIdList = film.getGenres().stream()
+                .map(Genre::getId)
+                .distinct()
+                .collect(Collectors.toList());
+        for (Integer genreId : filmGenreIdList) {
+            genreStorage.addGenresForFilm(genreId, film.getId());
         }
+        film.setGenres(genreStorage.findGenresByFilmId(filmId));
         return film;
     }
 
     @Override
     public Film updateFilm(Film film) {
         String sql = "UPDATE FILMS SET NAME = :name, RELEASE_DATE = :releaseDate, DESCRIPTION = :description, " +
-                "CATEGORY_MPA_ID = :categoryMpaId, DURATION = :duration, RATE = :rate WHERE FILM_ID = :id";
+                "CATEGORY_MPA_ID = :categoryMpaId, DURATION = :duration, RATE = :rate " +
+                "WHERE FILM_ID = :id";
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("id", film.getId());
         map.addValue("name", film.getName());
@@ -67,19 +74,28 @@ public class FilmDbStorage implements FilmStorage {
         map.addValue("duration", film.getDuration());
         map.addValue("rate", film.getRate());
 
-
         jdbcTemplate.update(sql, map);
+
+        List<Integer> filmGenreIdList = film.getGenres().stream()
+                .map(Genre::getId)
+                .distinct()
+                .collect(Collectors.toList());
         genreStorage.deleteGenresOfFilm(film.getId());
-        for (Genre genre : film.getGenres()) {
-            genreStorage.addGenresForFilm(genre.getId(), film.getId());
+
+        for (Integer genreId : filmGenreIdList) {
+            genreStorage.addGenresForFilm(genreId, film.getId());
         }
+        film.setGenres(genreStorage.findGenresByFilmId(film.getId()));
+
+        film.setMpa(mpaCategoryStorage.findMpaCategoryById(film.getMpa().getId()).get());
         return film;
     }
 
     @Override
     public List<Film> getAllFilms() {
         String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, " +
-                "F.DESCRIPTION, F.DURATION, F.RATE AS RT, F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME FROM FILMS AS F " +
+                "F.DESCRIPTION, F.DURATION, F.RATE AS RT, F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME " +
+                "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID";
         List<Film> filmList = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
         log.info("Найдено {} фильмов", filmList.size());
@@ -89,8 +105,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(long id) {
         String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.RATE AS RT, " +
-                "F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME FROM FILMS AS F JOIN MPA_CATEGORIES AS M " +
-                "ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID WHERE F.FILM_ID = :id";
+                "F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME " +
+                "FROM FILMS AS F " +
+                "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
+                "WHERE F.FILM_ID = :id";
         List<Film> filmList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeFilm(rs));
         if (!filmList.isEmpty()) {
             log.info("Найдена фильм с ID: {} и названием {} ", filmList.get(0).getId(), filmList.get(0).getName());
@@ -103,18 +121,21 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilmList(int count) {
-        String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME, COUNT(L.USER_ID) + F.RATE AS RT FROM FILMS AS F JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID GROUP BY F.FILM_ID ORDER BY RT DESC LIMIT :count";
+        String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.CATEGORY_MPA_ID, " +
+                "M.NAME AS MPA_NAME, COUNT(L.USER_ID) + F.RATE AS RT " +
+                "FROM FILMS AS F " +
+                "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
+                "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY RT DESC " +
+                "LIMIT :count";
         List<Film> filmList = jdbcTemplate.query(sql, Map.of("count", count), (rs, rowNum) -> makeFilm(rs));
         log.info("По запросу на {} самых популярных фильмов сформиован список из {} фильмов", count, filmList.size());
         return filmList;
     }
 
-
-    // вспомогательные методы
     private Film makeFilm(ResultSet rs) throws SQLException {
         long filmId = rs.getLong("FILM_ID");
-
-        Set<Genre> genresSet = new HashSet<>(genreStorage.findGenresByFilmId(filmId));
 
         Film film = new Film(
                 filmId,
@@ -125,7 +146,7 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getInt("RT"),
                 new MpaCategory(rs.getInt("CATEGORY_MPA_ID"), rs.getString("MPA_NAME"))
         );
-        film.setGenres(genresSet);
+        film.setGenres(genreStorage.findGenresByFilmId(filmId));
         return film;
     }
 }

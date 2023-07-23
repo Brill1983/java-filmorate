@@ -16,7 +16,7 @@ import ru.yandex.practicum.filmorate.storage.MpaCategoryStorage;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,19 +45,27 @@ public class FilmValidator {
             log.debug("В запросе передан фильм с продолжительностью {}", film.getDuration());
             throw new ValidationException("Продолжительность не может быть 0 или отрицательной");
         }
-        Set<Genre> filmGenreList = film.getGenres();
-        if (!filmGenreList.isEmpty()) {
-            List<Genre> genresInDb = genreStorage.findAllGenres();
-            for (Genre genre : filmGenreList) {
-                if (!genresInDb.contains(genre)) {
-                    log.debug("В запросе передан фильм с неправильным id жанра {}", genre.getId());
+
+        if (!film.getGenres().isEmpty()) {
+            List<Integer> filmGenreIdList = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .distinct()
+                    .collect(Collectors.toList());
+            List<Integer> genresInDb = genreStorage.findAllGenres().stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toList());
+            for (Integer genreId : filmGenreIdList) {
+                if (!genresInDb.contains(genreId)) {
+                    log.debug("В запросе передан фильм с неправильным id жанра {}", genreId);
                     throw new ValidationException("Жанр должен соответствовать базе данных");
                 }
             }
         }
         if (film.getMpa() != null) {
-            List<MpaCategory> mpaCategories = categoryStorage.findAllMpaCategories();
-            if (!mpaCategories.contains(film.getMpa())) {
+            List<Integer> mpaCategories = categoryStorage.findAllMpaCategories().stream()
+                    .map(MpaCategory::getId)
+                    .collect(Collectors.toList());
+            if (!mpaCategories.contains(film.getMpa().getId())) {
                 log.debug("В запросе передан фильм с неправильным id категории MPA {}", film.getMpa().getId());
                 throw new ValidationException("Категория MPA должен соответствовать базе данных");
             }

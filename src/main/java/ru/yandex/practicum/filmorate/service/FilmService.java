@@ -20,11 +20,9 @@ public class FilmService {
     private final UserValidator userValidator;
     private final LikesStorage likesStorage;
 
-
     public Film addFilm(Film film) {
         filmValidator.valid(film);
-        Film film2 = filmStorage.addFilm(film);
-        return film2;
+        return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
