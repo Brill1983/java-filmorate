@@ -33,10 +33,6 @@ public class FilmDbStorage implements FilmStorage {
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        System.out.println(film);
-        System.out.println(film.getMpa());
-        System.out.println(film.getMpa().getId());
-
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("name", film.getName());
         map.addValue("releaseDate", film.getReleaseDate());
@@ -49,7 +45,7 @@ public class FilmDbStorage implements FilmStorage {
         Long filmId = keyHolder.getKey().longValue();
 
         film.setId(filmId);
-        List<Integer> filmGenreIdList = film.getGenres().stream()
+        List<Integer> filmGenreIdList = film.getGenres().stream() // TODO - перенести в сервис
                 .map(Genre::getId)
                 .distinct()
                 .collect(Collectors.toList());
@@ -82,12 +78,12 @@ public class FilmDbStorage implements FilmStorage {
                 .collect(Collectors.toList());
         genreStorage.deleteGenresOfFilm(film.getId());
 
-        for (Integer genreId : filmGenreIdList) {
+        for (Integer genreId : filmGenreIdList) { // TODO - перенести в сервис
             genreStorage.addGenresForFilm(genreId, film.getId());
         }
         film.setGenres(genreStorage.findGenresByFilmId(film.getId()));
 
-        film.setMpa(mpaCategoryStorage.findMpaCategoryById(film.getMpa().getId()).get());
+        film.setMpa(mpaCategoryStorage.findMpaCategoryById(film.getMpa().getId()).get()); // TODO - перенести в сервис
         return film;
     }
 
@@ -97,21 +93,33 @@ public class FilmDbStorage implements FilmStorage {
                 "F.DESCRIPTION, F.DURATION, F.RATE AS RT, F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID";
-        List<Film> filmList = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
+
+        List<Film> filmList = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs)); // TODO - добавить на слое сервис сборку жанров
         log.info("Найдено {} фильмов", filmList.size());
         return filmList;
     }
 
     @Override
     public Optional<Film> getFilmById(long id) {
+
         String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.RATE AS RT, " +
                 "F.CATEGORY_MPA_ID, M.NAME AS MPA_NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "WHERE F.FILM_ID = :id";
         List<Film> filmList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeFilm(rs));
+
         if (!filmList.isEmpty()) {
             log.info("Найдена фильм с ID: {} и названием {} ", filmList.get(0).getId(), filmList.get(0).getName());
+            List<Genre> filmGenres = new ArrayList<>();
+            Map<Genre, List<Long>> filmsGenresMap = genreStorage.getFilmsGenresMap(); // TODO - перенести в сервис
+            for (Genre genre : filmsGenresMap.keySet()) {
+                if(filmsGenresMap.get(genre).contains(filmList.get(0).getId())) {
+                    filmGenres.add(genre);
+                }
+            }
+            filmGenres.sort(Comparator.comparing(Genre::getId));
+            filmList.get(0).setGenres(filmGenres);
             return Optional.of(filmList.get(0));
         } else {
             log.info("Фильм c идентификатором {} не найден в БД", id);
@@ -146,7 +154,16 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getInt("RT"),
                 new MpaCategory(rs.getInt("CATEGORY_MPA_ID"), rs.getString("MPA_NAME"))
         );
-        film.setGenres(genreStorage.findGenresByFilmId(filmId));
+//        film.setGenres(genreStorage.findGenresByFilmId(filmId));
+//        List<Genre> filmGenres = new ArrayList<>();
+//        Map<Genre, List<Long>> filmsGenresMap = genreStorage.getFilmsGenresMap();
+//        for (Genre genre : filmsGenresMap.keySet()) {
+//            if(filmsGenresMap.get(genre).contains(filmId)) {
+//                filmGenres.add(genre);
+//            }
+//        }
+//        filmGenres.sort(Comparator.comparing(Genre::getId));
+//        film.setGenres(filmGenres);
         return film;
     }
 }
