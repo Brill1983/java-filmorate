@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -22,13 +23,13 @@ public class UserService {
 
     public User saveUser(User user) {
         userValidator.valid(user);
-        return userStorage.saveUser(user);
+        return userStorage.saveUser(checkUserName(user));
     }
 
     public User updateUser(User user) {
         userValidator.validId(user.getId());
         userValidator.valid(user);
-        return userStorage.updateUser(user);
+        return userStorage.updateUser(checkUserName(user));
     }
 
     public List<User> getAllUsers() {
@@ -69,5 +70,13 @@ public class UserService {
         userValidator.validId(userId);
         userValidator.validId(otherId);
         return friendsStorage.getCommonFriends(userId, otherId);
+    }
+
+    private User checkUserName(User user) {
+        if (StringUtils.isBlank(user.getName())) {
+            log.debug("Вместо пустого имени присваивается логин");
+            user.setName(user.getLogin());
+        }
+        return user;
     }
 }

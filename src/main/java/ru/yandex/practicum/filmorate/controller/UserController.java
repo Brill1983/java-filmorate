@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/users")
@@ -15,12 +16,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public User saveUser(@RequestBody User user) {
+    public User saveUser(@RequestBody @Valid User user) {
         return userService.saveUser(user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(@RequestBody @Valid User user) {
         return userService.updateUser(user);
     }
 

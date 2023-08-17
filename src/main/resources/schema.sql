@@ -5,6 +5,7 @@ create table if not exists GENRES
     constraint "GENRES_pk"
         primary key (GENRE_ID)
 );
+ALTER TABLE GENRES ALTER COLUMN GENRE_ID RESTART WITH 7;
 
 create table if not exists MPA_CATEGORIES
 (
@@ -13,6 +14,7 @@ create table if not exists MPA_CATEGORIES
     constraint "MPA_CATEGORIES_pk"
         primary key (CATEGORY_MPA_ID)
 );
+ALTER TABLE MPA_CATEGORIES ALTER COLUMN CATEGORY_MPA_ID RESTART WITH 6;
 
 create table if not exists FILMS
 (

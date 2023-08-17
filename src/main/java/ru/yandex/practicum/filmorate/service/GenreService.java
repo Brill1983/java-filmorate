@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+//import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
@@ -26,13 +26,13 @@ public class GenreService {
     }
 
     public List<Genre> findGenresByFilmId(int id) {
-        filmValidator.validId(id);
+//        filmValidator.validId(id);
         return genreStorage.findGenresByFilmId(id);
     }
 
     public Genre addGenre(Genre genre) {
         if (StringUtils.isBlank(genre.getName())) {
-            throw new ValidationException("Название жанра обзятельно для заполнения");
+//            throw new ValidationException("Название жанра обзятельно для заполнения");
         }
         return genreStorage.createNewGenre(genre);
     }
