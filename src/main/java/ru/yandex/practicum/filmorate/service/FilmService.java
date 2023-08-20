@@ -8,10 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,14 +28,9 @@ public class FilmService {
         filmValidator.valid(film);
         Film backedFilm =  filmStorage.addFilm(film);
 
-        List<Integer> filmGenresIdList = film.getGenres().stream()// добавляем жанры
-                .map(Genre::getId)
-                .distinct()
-                .collect(Collectors.toList());
-        for (Integer genreId : filmGenresIdList) {
-            genreStorage.addGenresForFilm(genreId, backedFilm.getId());
+        for (Genre genre : film.getGenres()) {
+            genreStorage.addGenresForFilm(genre.getId(), backedFilm.getId());
         }
-
         // TODO добавить режиссеров
         return getFilmById(backedFilm.getId());
     }
@@ -49,12 +41,8 @@ public class FilmService {
         Film backedFilm = filmStorage.updateFilm(film);
 
         genreStorage.deleteGenresOfFilm(film.getId());
-        List<Integer> filmGenresIdList = film.getGenres().stream()// добавляем жанры
-                .map(Genre::getId)
-                .distinct()
-                .collect(Collectors.toList());
-        for (Integer genreId : filmGenresIdList) {
-            genreStorage.addGenresForFilm(genreId, backedFilm.getId());
+        for (Genre genre : film.getGenres()) {
+            genreStorage.addGenresForFilm(genre.getId(), backedFilm.getId());
         }
 
         // TODO добавить режиссеров
@@ -63,38 +51,19 @@ public class FilmService {
 
     public List<Film> getAllFilms() {
         List<Film> filmList = filmStorage.getAllFilms();
-        if(!filmList.isEmpty()) {
 
-            Map<Genre, List<Long>> filmsGenresMap = genreStorage.getFilmsGenresMap();
-            for (Film film : filmList) { // итерация по списку фильмов
-                List<Genre> filmGenres = new ArrayList<>();
-                for (Genre genre : filmsGenresMap.keySet()) { // итерация по мапе, где ключ: жанр, значение: список с ID фильмов.
-                    if (filmsGenresMap.get(genre).contains(film.getId())) { // если ID фильма содержится в списке-значении мапы - то формируем список жанров для фильма
-                        filmGenres.add(genre);
-                    }
-                }
-                filmGenres.sort(Comparator.comparing(Genre::getId)); // сортируем список
-                film.setGenres(filmGenres);
-            }
-
-            return filmList;
-        }
-        return new ArrayList<>();
+            // TODO лайки - в репозитории, отдельным методом, и передачей в makeFilm
+            // TODO режиссеры - в репозитории, отдельным методом, и передачей в makeFilm
+        return filmList; // TODO - нужно ли проверять на пустой список?
     }
 
     public Film getFilmById(long filmId) {
-        Film film = filmStorage.getFilmById(filmId).orElseThrow(() -> new FilmNotFoundException("Фильма с ID " + filmId + " нет в базе"));
+        Film film = filmStorage.getFilmById(filmId)
+                .orElseThrow(() -> new FilmNotFoundException("Фильма с ID " + filmId + " нет в базе"));
 
-//        List<Genre> filmGenres = new ArrayList<>(); // собираем ему жанры TODO МАПА не нужна - можно одним запросом получить список
-//        Map<Genre, List<Long>> filmsGenresMap = genreStorage.getFilmsGenresMap();
-//        for (Genre genre : filmsGenresMap.keySet()) {
-//            if(filmsGenresMap.get(genre).contains(film.getId())) {
-//                filmGenres.add(genre);
-//            }
-//        }
-//        filmGenres.sort(Comparator.comparing(Genre::getId));
-
-        List<Genre> filmGenres = genreStorage.findGenresByFilmId(filmId);
+        //TODO режиссеры
+        //TODO лайки
+        Set<Genre> filmGenres = new HashSet<>(genreStorage.findGenresByFilmId(filmId));
         film.setGenres(filmGenres);
         return film;
     }

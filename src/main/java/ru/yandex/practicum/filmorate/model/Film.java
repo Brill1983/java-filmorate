@@ -39,13 +39,13 @@ public class Film {
 
     private MpaCategory mpa;
 
-    private Set<Director> directors = new HashSet<>();
+    private Set<Director> directors = new HashSet<>(); // TODO поменять на LIST
 
-    private List<Genre> genres = new ArrayList<>();
+    private Set<Genre> genres = new HashSet<>();
 
-    private Set<User> likes = new HashSet<>();
+    private Set<User> likes = new HashSet<>(); // TODO поменять на LIST - сделать сортировку в запросе, а проверку на уникальность при записи
 
-    public Film(long id, String name, String description, LocalDate releaseDate, int duration, int rate, MpaCategory mpa) {
+    public Film(long id, String name, String description, LocalDate releaseDate, int duration, int rate, MpaCategory mpa, Set<Genre> genres) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -53,5 +53,6 @@ public class Film {
         this.duration = duration;
         this.rate = rate;
         this.mpa = mpa;
+        this.genres = genres;
     }
 }

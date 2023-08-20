@@ -99,27 +99,28 @@ public class GenreDbStorage implements GenreStorage {
         return genre;
     }
 
-    @Override
-    public Map<Genre, List<Long>> getFilmsGenresMap() { // TODO новый метод для вывода списка с 2 запросами к БД.
-        Map<Genre, List<Long>> filmGenreMap = new HashMap<>();
-
-        String sql = "SELECT FILM_ID, F.GENRE_ID AS GENRE_ID, G.NAME AS NAME " +
-                "FROM FILM_GENRES F " +
-                "LEFT JOIN GENRES G ON f.GENRE_ID = G.GENRE_ID";
-
-        SqlRowSet rows = jdbcTemplate.getJdbcOperations().queryForRowSet(sql);
-
-        while(rows.next()) {
-            Genre genre = new Genre(rows.getInt("GENRE_ID"), rows.getString("NAME"));
-            if(filmGenreMap.containsKey(genre)) {
-                filmGenreMap.get(genre).add(rows.getLong("FILM_ID"));
-            } else {
-                List<Long> filmsIdsList = new ArrayList<>();
-                filmsIdsList.add(rows.getLong("FILM_ID"));
-                filmGenreMap.put(genre, filmsIdsList);
-            }
-        }
-        return filmGenreMap;
-    }
+//    @Override
+//    public Map<Genre, List<Long>> getFilmsGenresMap() { // TODO новый метод для вывода списка с 2 запросами к БД.
+//        Map<Genre, List<Long>> filmGenreMap = new HashMap<>();
+//
+//        String sql = "SELECT FILM_ID, F.GENRE_ID AS GENRE_ID, G.NAME AS NAME " +
+//                "FROM FILM_GENRES F " +
+//                "LEFT JOIN GENRES G ON f.GENRE_ID = G.GENRE_ID " +
+//                "ORDER BY GENRE_ID";
+//
+//        SqlRowSet rows = jdbcTemplate.getJdbcOperations().queryForRowSet(sql);
+//
+//        while(rows.next()) {
+//            Genre genre = new Genre(rows.getInt("GENRE_ID"), rows.getString("NAME"));
+//            if(filmGenreMap.containsKey(genre)) {
+//                filmGenreMap.get(genre).add(rows.getLong("FILM_ID"));
+//            } else {
+//                List<Long> filmsIdsList = new ArrayList<>();
+//                filmsIdsList.add(rows.getLong("FILM_ID"));
+//                filmGenreMap.put(genre, filmsIdsList);
+//            }
+//        }
+//        return filmGenreMap;
+//    }
 
 }

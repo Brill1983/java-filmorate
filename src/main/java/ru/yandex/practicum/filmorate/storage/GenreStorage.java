@@ -20,5 +20,5 @@ public interface GenreStorage {
 
     void addGenresForFilm(Integer genreId, Long filmId);
 
-    Map<Genre, List<Long>> getFilmsGenresMap();
+//    Map<Genre, List<Long>> getFilmsGenresMap();
 }
