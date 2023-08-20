@@ -2,10 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 
 @Setter
@@ -18,7 +15,8 @@ public class User {
 
     private long id = 0L;
 
-    @Email(message = "Передан неправильный или пустой email")
+    @NotBlank(message = "Передан пустой email")
+    @Email(message = "Передан неправильный формат email")
     private String email;
 
     @NotBlank(message = "Передан пустой логин")
