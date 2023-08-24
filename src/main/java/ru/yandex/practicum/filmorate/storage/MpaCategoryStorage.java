@@ -10,5 +10,7 @@ public interface MpaCategoryStorage {
 
     Optional<MpaCategory> findMpaCategoryById(int id);
 
+    List<Integer> findAllMpaIds();
+
     MpaCategory createNewMpaCategory(MpaCategory mpaCategory);
 }

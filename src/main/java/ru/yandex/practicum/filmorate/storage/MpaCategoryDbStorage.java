@@ -6,11 +6,13 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +43,18 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage {
             log.info("Категория c идентификатором {} не найдена", id);
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<Integer> findAllMpaIds() {
+        String sql = "SELECT CATEGORY_MPA_ID FROM MPA_CATEGORIES";
+        SqlRowSet rows = jdbcTemplate.getJdbcOperations().queryForRowSet(sql);
+        List<Integer> mpaIdList = new ArrayList<>();
+        while(rows.next()) {
+            mpaIdList.add(rows.getInt("CATEGORY_MPA_ID"));
+        }
+        log.info("Найдено {} ID категорий МПА", mpaIdList.size());
+        return mpaIdList;
     }
 
     @Override

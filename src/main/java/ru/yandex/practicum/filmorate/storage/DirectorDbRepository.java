@@ -6,13 +6,15 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.rowMapper.DirectorRowMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -26,13 +28,34 @@ public class DirectorDbRepository implements DirectorRepository {
 
         String sql = "select * from DIRECTORS";
         List<Director> directorList = jdbcTemplate.query(sql, new DirectorRowMapper());
-        log.info("Найдено {} режиссеров", directorList.size());
+        log.info("Найдено в базе {} режиссеров", directorList.size());
         return directorList;
     }
 
     @Override
-    public Director getDirectorById(int id) {
-        return checkDirectorId(id);
+    public List<Integer> findAllDirectorsIds() {
+        String sql = "SELECT DIRECTOR_ID FROM DIRECTORS";
+        SqlRowSet rows = jdbcTemplate.getJdbcOperations().queryForRowSet(sql);
+        List<Integer> dirIdList = new ArrayList<>();
+        while(rows.next()) {
+            dirIdList.add(rows.getInt("DIRECTOR_ID"));
+        }
+        log.info("Найдено в базе {} ID режиссеров", dirIdList.size());
+        return dirIdList;
+    }
+
+    @Override
+    public Optional<Director> getDirectorById(int id) {
+
+        String sql = "select * from DIRECTORS where DIRECTOR_ID = :directorId";
+        List<Director> directors = jdbcTemplate.query(sql, Map.of("directorId", id), new DirectorRowMapper());
+        if (!directors.isEmpty()) {
+            log.info("Найден в базе режиссер с ID: {} и именем {} ", directors.get(0).getId(), directors.get(0).getName());
+            return Optional.of(directors.get(0));
+        } else {
+            log.info("Режиссер c идентификатором {} не найден в БД", id);
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -53,7 +76,6 @@ public class DirectorDbRepository implements DirectorRepository {
 
     @Override
     public Director updateDirector(Director director) {
-        checkDirectorId(director.getId());
         String sql = "UPDATE DIRECTORS SET NAME = :name WHERE DIRECTOR_ID = :id";
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("id", director.getId());
@@ -67,7 +89,6 @@ public class DirectorDbRepository implements DirectorRepository {
 
     @Override
     public void deleteDirector(int id) {
-        checkDirectorId(id);
         String sql = "DELETE FROM FILM_DIRECTORS WHERE DIRECTOR_ID = :directorId";
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("directorId", id);
@@ -76,22 +97,16 @@ public class DirectorDbRepository implements DirectorRepository {
         jdbcTemplate.update(sql, map);
     }
 
-    @Override
-    public void addDirectorToFilm(long filmId, int directorId) {
-        checkDirectorId(directorId);
-        String sql = "INSERT INTO FILM_DIRECTORS(FILM_ID, DIRECTOR_ID) VALUES ( :filmId, :directorId )";
-        jdbcTemplate.update(sql, Map.of("filmId", filmId, "directorId", directorId));
-    }
-
-    private Director checkDirectorId(int directorId) {
-        String sql = "select * from DIRECTORS where DIRECTOR_ID = :directorId";
-        List<Director> directors = jdbcTemplate.query(sql, Map.of("directorId", directorId), new DirectorRowMapper());
-        if (directors.size() != 1) {
-            throw new DirectorNotFoundException(directorId);
-        }
-        if (directors.get(0).getId() != directorId) {
-            throw new DirectorNotFoundException(directorId);
-        }
-        return directors.get(0);
-    }
+    //TODO - сохранить и использовать в валидаторе, сделать паблик
+//    private Director checkDirectorId(int directorId) {
+//        String sql = "select * from DIRECTORS where DIRECTOR_ID = :directorId";
+//        List<Director> directors = jdbcTemplate.query(sql, Map.of("directorId", directorId), new DirectorRowMapper());
+//        if (directors.size() != 1) {
+//            throw new DirectorNotFoundException(directorId);
+//        }
+//        if (directors.get(0).getId() != directorId) {
+//            throw new DirectorNotFoundException(directorId);
+//        }
+//        return directors.get(0);
+//    }
 }

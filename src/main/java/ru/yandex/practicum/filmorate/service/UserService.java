@@ -18,17 +18,16 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserStorage userStorage;
-    private final UserValidator userValidator;
+    private final ValidationService validationService;
     private final FriendsStorage friendsStorage;
 
     public User saveUser(User user) {
-        userValidator.valid(user);
+        checkUserName(user);
         return userStorage.saveUser(checkUserName(user));
     }
 
     public User updateUser(User user) {
-        userValidator.validId(user.getId());
-        userValidator.valid(user);
+        checkUserName(user);
         return userStorage.updateUser(checkUserName(user));
     }
 
@@ -41,8 +40,8 @@ public class UserService {
     }
 
     public boolean addAsFriend(long userId, long friendId) {
-        userValidator.validId(userId);
-        userValidator.validId(friendId);
+        validationService.validUserId(userId);
+        validationService.validUserId(friendId);
         List<Long> friendsIdList = friendsStorage.getFriendsList(userId)
                 .stream()
                 .map(User::getId)
@@ -56,19 +55,19 @@ public class UserService {
     }
 
     public boolean deleteFriend(long userId, long friendId) {
-        userValidator.validId(userId);
-        userValidator.validId(friendId);
+        validationService.validUserId(userId);
+        validationService.validUserId(friendId);
         return friendsStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriendsList(long userId) {
-        userValidator.validId(userId);
+        validationService.validUserId(userId);
         return friendsStorage.getFriendsList(userId);
     }
 
     public List<User> getCommonFriends(long userId, long otherId) {
-        userValidator.validId(userId);
-        userValidator.validId(otherId);
+        validationService.validUserId(userId);
+        validationService.validUserId(otherId);
         return friendsStorage.getCommonFriends(userId, otherId);
     }
 

@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.rowMapper.UserRowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,7 +61,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getAllUsers() {
         String sql = "SELECT * FROM USERS";
-        List<User> usersList = jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
+        List<User> usersList = jdbcTemplate.query(sql, new UserRowMapper());
         log.info("Найдено {} пользователей", usersList.size());
         return usersList;
     }
@@ -68,7 +69,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUserById(long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = :id";
-        List<User> userList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeUser(rs));
+        List<User> userList = jdbcTemplate.query(sql, Map.of("id", id), new UserRowMapper());
         if (!userList.isEmpty()) {
             log.info("Найден пользователь с ID: {} и именем {} ", userList.get(0).getId(), userList.get(0).getName());
             return Optional.of(userList.get(0));
@@ -78,13 +79,13 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    private User makeUser(ResultSet rs) throws SQLException {
-        return new User(
-                rs.getLong("USER_ID"),
-                rs.getString("EMAIL"),
-                rs.getString("LOGIN"),
-                rs.getString("NAME"),
-                rs.getDate("BIRTHDAY").toLocalDate()
-        );
-    }
+//    private User makeUser(ResultSet rs) throws SQLException {
+//        return new User(
+//                rs.getLong("USER_ID"),
+//                rs.getString("EMAIL"),
+//                rs.getString("LOGIN"),
+//                rs.getString("NAME"),
+//                rs.getDate("BIRTHDAY").toLocalDate()
+//        );
+//    }
 }

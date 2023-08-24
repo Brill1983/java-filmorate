@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
+import javax.validation.ValidationException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -16,12 +17,7 @@ import java.io.StringWriter;
 @RestControllerAdvice
 public class ErrorHandler {
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ErrorResponse handleValidationExc(ValidationException e) {
-//        return new ErrorResponse(e.getMessage());
-//    }
-    @ExceptionHandler // ошибки валидации через аннотации
+    @ExceptionHandler({MethodArgumentNotValidException.class, IncorrectParameterException.class, IncorrectRequestBodyException.class}) // ошибки валидации через аннотации
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.info("Validation: {}", e.getMessage());

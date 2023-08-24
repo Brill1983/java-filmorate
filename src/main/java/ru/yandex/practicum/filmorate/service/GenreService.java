@@ -15,7 +15,7 @@ import java.util.List;
 public class GenreService {
 
     private final GenreStorage genreStorage;
-    private final FilmValidator filmValidator;
+    private final ValidationService validationService;
 
     public List<Genre> findAllGenres() {
         return genreStorage.findAllGenres();
@@ -25,10 +25,10 @@ public class GenreService {
         return genreStorage.findGenreById(id).orElseThrow(() -> new GenreNotFoundException("Жанра с ID " + id + " нет в базе"));
     }
 
-    public List<Genre> findGenresByFilmId(int id) {
-//        filmValidator.validId(id);
-        return genreStorage.findGenresByFilmId(id);
-    }
+//    public List<Genre> findGenresByFilmId(int id) {
+////        filmValidator.validId(id);
+//        return genreStorage.findGenresByFilmId(id);
+//    }
 
     public Genre addGenre(Genre genre) {
         if (StringUtils.isBlank(genre.getName())) {
