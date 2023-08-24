@@ -24,10 +24,10 @@ public class GenreController {
         return genreService.findGenreById(id);
     }
 
-    @GetMapping("/film/{id}")
-    public List<Genre> findGenresByFilmId(@PathVariable int id) {
-        return genreService.findGenresByFilmId(id);
-    }
+//    @GetMapping("/film/{id}")
+//    public List<Genre> findGenresByFilmId(@PathVariable int id) {
+//        return genreService.findGenresByFilmId(id);
+//    }
 
     @PostMapping
     public Genre addGenre(@RequestBody Genre genre) {

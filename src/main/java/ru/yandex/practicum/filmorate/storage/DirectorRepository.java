@@ -3,12 +3,15 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DirectorRepository {
 
     List<Director> getAllDirectors();
 
-    Director getDirectorById(int id);
+    List<Integer> findAllDirectorsIds();
+
+    Optional<Director> getDirectorById(int id);
 
     Director addDirector(Director director);
 
@@ -16,5 +19,5 @@ public interface DirectorRepository {
 
     void deleteDirector(int id);
 
-    void addDirectorToFilm(long filmId, int directorId);
+//    void addDirectorToFilm(long filmId, int directorId);
 }

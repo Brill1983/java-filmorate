@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -35,9 +36,9 @@ public class FilmDbStorageTest {
                 .releaseDate(LocalDate.of(1990, 1, 5))
                 .duration(80)
                 .mpa(new MpaCategory(1, "G"))
-                .rate(4)
+//                .rate(4)
                 .build();
-        film.setGenres(List.of(new Genre(1, null)));
+        film.setGenres(Set.of(new Genre(1, null)));
 
         Film backedFilm = filmStorage.addFilm(film);
 
@@ -71,9 +72,9 @@ public class FilmDbStorageTest {
                 .releaseDate(LocalDate.of(1990, 1, 5))
                 .duration(80)
                 .mpa(new MpaCategory(1, "G"))
-                .rate(4)
+//                .rate(4)
                 .build();
-        film1.setGenres(List.of(new Genre(1, null)));
+        film1.setGenres(Set.of(new Genre(1, null)));
         filmStorage.addFilm(film1);
 
         Film film2 = Film.builder()
@@ -84,7 +85,7 @@ public class FilmDbStorageTest {
                 .duration(100)
                 .mpa(new MpaCategory(2, "PG"))
                 .build();
-        film2.setGenres(List.of(new Genre(1, null), new Genre(2, null)));
+        film2.setGenres(Set.of(new Genre(1, null), new Genre(2, null)));
 
         Film backedFilm = filmStorage.updateFilm(film2);
 
@@ -110,13 +111,13 @@ public class FilmDbStorageTest {
                 .releaseDate(LocalDate.of(1990, 1, 5))
                 .duration(80)
                 .mpa(new MpaCategory(1, "G"))
-                .rate(4)
+//                .rate(4)
                 .build();
-        film.setGenres(List.of(new Genre(1, "Комедия")));
+        film.setGenres(Set.of(new Genre(1, "Комедия")));
 
         filmStorage.addFilm(film);
 
-        List<Film> filmList = filmStorage.getAllFilms();
+        List<Film> filmList = filmStorage.getFilmsList();
 
         assertThat(filmList.size())
                 .isEqualTo(1);
@@ -131,9 +132,9 @@ public class FilmDbStorageTest {
                 .releaseDate(LocalDate.of(1990, 1, 5))
                 .duration(80)
                 .mpa(new MpaCategory(1, "G"))
-                .rate(4)
+//                .rate(4)
                 .build();
-        film.setGenres(List.of(new Genre(1, "Комедия")));
+        film.setGenres(Set.of(new Genre(1, "Комедия")));
 
         filmStorage.addFilm(film);
 

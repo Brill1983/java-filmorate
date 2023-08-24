@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.rowMapper.UserRowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,6 +54,18 @@ public class LikesDbStorage implements LikesStorage {
         } else {
             return true;
         }
+    }
+
+    @Override
+    public List<User> getFilmLikes(long filmId) {
+        final String sqlQuery = "select * " + //TODO переделать запрос - без подзапросов
+                "from USERS " +
+                "where USER_ID in (" +
+                "select USER_ID " +
+                "from LIKES " +
+                "where FILM_ID = :filmId) " +
+                "order by USER_ID";
+        return jdbcTemplate.query(sqlQuery, Map.of("filmId", filmId), new UserRowMapper());
     }
 
     private Long makeId(ResultSet rs) throws SQLException {

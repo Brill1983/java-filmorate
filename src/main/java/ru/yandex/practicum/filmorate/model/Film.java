@@ -35,23 +35,14 @@ public class Film {
     @Positive(message = "Продолжительность не может быть 0 или отрицательной")
     private int duration;
 
-    private int rate;
+//    private int rate;
 
     private MpaCategory mpa;
 
     private Set<Director> directors = new HashSet<>();
 
-    private List<Genre> genres = new ArrayList<>();
+    private Set<Genre> genres = new HashSet<>();
 
     private Set<User> likes = new HashSet<>();
 
-    public Film(long id, String name, String description, LocalDate releaseDate, int duration, int rate, MpaCategory mpa) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.rate = rate;
-        this.mpa = mpa;
-    }
 }
