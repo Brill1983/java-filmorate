@@ -25,8 +25,7 @@ public class DirectorDbRepository implements DirectorRepository {
 
     @Override
     public List<Director> getAllDirectors() {
-
-        String sql = "select * from DIRECTORS";
+        String sql = "SELECT * FROM DIRECTORS";
         List<Director> directorList = jdbcTemplate.query(sql, new DirectorRowMapper());
         log.info("Найдено в базе {} режиссеров", directorList.size());
         return directorList;
@@ -46,8 +45,7 @@ public class DirectorDbRepository implements DirectorRepository {
 
     @Override
     public Optional<Director> getDirectorById(int id) {
-
-        String sql = "select * from DIRECTORS where DIRECTOR_ID = :directorId";
+        String sql = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = :directorId";
         List<Director> directors = jdbcTemplate.query(sql, Map.of("directorId", id), new DirectorRowMapper());
         if (!directors.isEmpty()) {
             log.info("Найден в базе режиссер с ID: {} и именем {} ", directors.get(0).getId(), directors.get(0).getName());
@@ -60,14 +58,10 @@ public class DirectorDbRepository implements DirectorRepository {
 
     @Override
     public Director addDirector(Director director) {
-
-        String sql = "insert into DIRECTORS (NAME) VALUES (:name)";
-
+        String sql = "INSERT INTO DIRECTORS (NAME) VALUES (:name)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("name", director.getName());
-
         jdbcTemplate.update(sql, map, keyHolder);
         director.setId(keyHolder.getKey().intValue());
         log.info("Внесен новый режиссер {} c ID {}", director.getName(), director.getId());
@@ -80,33 +74,17 @@ public class DirectorDbRepository implements DirectorRepository {
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("id", director.getId());
         map.addValue("name", director.getName());
-
         jdbcTemplate.update(sql, map);
-
         log.info("Режиссер ID {} изменен на {}", director.getId(), director.getName());
         return director;
     }
 
     @Override
-    public void deleteDirector(int id) {
-        String sql = "DELETE FROM FILM_DIRECTORS WHERE DIRECTOR_ID = :directorId";
-        MapSqlParameterSource map = new MapSqlParameterSource();
-        map.addValue("directorId", id);
-        jdbcTemplate.update(sql, map);
+    public void deleteDirector(int directorId) {
+        String sql = "DELETE FROM FILM_DIRECTORS WHERE DIRECTOR_ID = :directorId"; //TODO заменить на delete on cascade
+        jdbcTemplate.update(sql, Map.of("directorId", directorId));
         sql = "DELETE FROM DIRECTORS WHERE DIRECTOR_ID = :directorId";
-        jdbcTemplate.update(sql, map);
+        jdbcTemplate.update(sql, Map.of("directorId", directorId));
+        log.info("Режиссер с иденттификатором {} удален", directorId);
     }
-
-    //TODO - сохранить и использовать в валидаторе, сделать паблик
-//    private Director checkDirectorId(int directorId) {
-//        String sql = "select * from DIRECTORS where DIRECTOR_ID = :directorId";
-//        List<Director> directors = jdbcTemplate.query(sql, Map.of("directorId", directorId), new DirectorRowMapper());
-//        if (directors.size() != 1) {
-//            throw new DirectorNotFoundException(directorId);
-//        }
-//        if (directors.get(0).getId() != directorId) {
-//            throw new DirectorNotFoundException(directorId);
-//        }
-//        return directors.get(0);
-//    }
 }

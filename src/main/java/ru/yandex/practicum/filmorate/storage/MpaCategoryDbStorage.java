@@ -26,7 +26,7 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage {
 
     @Override
     public List<MpaCategory> findAllMpaCategories() {
-        String sql = "select * from MPA_CATEGORIES";
+        String sql = "SELECT * FROM MPA_CATEGORIES";
         List<MpaCategory> mpaCategoryList = jdbcTemplate.query(sql, (rs, rowNum) -> makeMpaCategory(rs));
         log.info("Найдено {} категорий", mpaCategoryList.size());
         return mpaCategoryList;
@@ -34,7 +34,7 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage {
 
     @Override
     public Optional<MpaCategory> findMpaCategoryById(int id) {
-        String sql = "select * from MPA_CATEGORIES where CATEGORY_MPA_ID = :id";
+        String sql = "SELECT * FROM MPA_CATEGORIES WHERE CATEGORY_MPA_ID = :id";
         List<MpaCategory> mpaCategoryList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeMpaCategory(rs));
         if (!mpaCategoryList.isEmpty()) {
             log.info("Найдена категория MPA с ID: {} и названием {} ", mpaCategoryList.get(0).getId(), mpaCategoryList.get(0).getName());
@@ -59,7 +59,7 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage {
 
     @Override
     public MpaCategory createNewMpaCategory(MpaCategory mpaCategory) {
-        String sql = "insert into MPA_CATEGORIES (NAME) VALUES (:name)";
+        String sql = "INSERT INTO MPA_CATEGORIES (NAME) VALUES (:name)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 

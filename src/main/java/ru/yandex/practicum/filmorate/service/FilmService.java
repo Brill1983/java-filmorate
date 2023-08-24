@@ -33,7 +33,6 @@ public class FilmService {
 
     public List<Film> getAllFilms() {
         // TODO лайки - в репозитории, отдельным методом, и передачей в makeFilm
-        // TODO режиссеры - в репозитории, отдельным методом, и передачей в makeFilm
         return filmRepository.getFilmsList(); // TODO - нужно ли проверять на пустой список?
     }
 

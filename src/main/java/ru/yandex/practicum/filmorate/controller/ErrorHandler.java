@@ -17,7 +17,7 @@ import java.io.StringWriter;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, IncorrectParameterException.class, IncorrectRequestBodyException.class}) // ошибки валидации через аннотации
+    @ExceptionHandler({MethodArgumentNotValidException.class, IncorrectParameterException.class, IncorrectRequestBodyException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.info("Validation: {}", e.getMessage());

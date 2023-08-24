@@ -81,7 +81,7 @@ public class FilmDbStorage implements FilmStorage {
                 .forEach(genre -> addGenresForFilm(genre.getId(), filmId));
         film.getDirectors()
                 .forEach(director -> addDirectorToFilm(filmId, director.getId()));
-
+        log.info("В базу занесен фильм с идентификатором {}", filmId);
         return getFilmById(film.getId()).get();
     }
 
@@ -101,6 +101,7 @@ public class FilmDbStorage implements FilmStorage {
 
         sqlQuery = "DELETE FROM FILMS WHERE FILM_ID = :filmId";
         int count = jdbcOperations.update(sqlQuery, Map.of("filmId", filmId));
+        log.info("Удален фильм с идентификатором {}", filmId);
         return count > 0;
     }
 
@@ -126,7 +127,7 @@ public class FilmDbStorage implements FilmStorage {
         deleteDirectorsOfFilm(film.getId());
         film.getDirectors()
                 .forEach(director -> addDirectorToFilm(film.getId(), director.getId()));
-
+        log.info("Обновлен фильм с идентификатором {}", film.getId());
         return getFilmById(film.getId()).get();
     }
 
@@ -143,13 +144,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getDirectorFilmListByYear(int directorId) {
 
-        final String sql = "select * " +
-                "from FILMS as F " +
-                "join MPA_CATEGORIES as M ON F.CATEGORY_MPA_ID=M.CATEGORY_MPA_ID " +
-                "join FILM_DIRECTORS FD on F.FILM_ID = FD.FILM_ID " +
-                "join DIRECTORS D on FD.DIRECTOR_ID = D.DIRECTOR_ID " +
-                "where D.DIRECTOR_ID = :directorId " +
-                "order by RELEASE_DATE";
+        final String sql = "SELECT * " +
+                "FROM FILMS AS F " +
+                "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID=M.CATEGORY_MPA_ID " +
+                "JOIN FILM_DIRECTORS FD ON F.FILM_ID = FD.FILM_ID " +
+                "JOIN DIRECTORS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID " +
+                "WHERE D.DIRECTOR_ID = :directorId " +
+                "ORDER BY RELEASE_DATE";
 
         List<Film> filmList = jdbcOperations.query(sql, Map.of("directorId", directorId), (rs, rowNum) ->
                 makeFilm(rs, getFilmsGenresMap(), getFilmsDirectorsMap()));
@@ -160,14 +161,14 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getDirectorFilmListByLikes(int directorId) {
 
-        final String sql = "select F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
-                "from FILMS as F " +
-                "join MPA_CATEGORIES as M ON F.CATEGORY_MPA_ID=M.CATEGORY_MPA_ID " +
-                "join FILM_DIRECTORS FD on F.FILM_ID = FD.FILM_ID " +
-                "left join LIKES L on F.FILM_ID = L.FILM_ID " +
-                "where FD.DIRECTOR_ID = :directorId " +
-                "group by F.FILM_ID " +
-                "order by COUNT(L.USER_ID) DESC";
+        final String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
+                "FROM FILMS as F " +
+                "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
+                "JOIN FILM_DIRECTORS FD ON F.FILM_ID = FD.FILM_ID " +
+                "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
+                "WHERE FD.DIRECTOR_ID = :directorId " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.USER_ID) DESC";
 
         List<Film> filmList = jdbcOperations.query(sql, Map.of("directorId", directorId), (rs, rowNum) ->
                 makeFilm(rs, getFilmsGenresMap(), getFilmsDirectorsMap()));
@@ -179,18 +180,17 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> searchFilmsByDirAndName(String query) {
         String regex = "%" + query + "%";
         String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
-                "from FILMS as F " +
-                "join MPA_CATEGORIES as M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
-                "left join LIKES L on F.FILM_ID = L.FILM_ID " +
-                "where UPPER(F.NAME) like UPPER(:regex) OR F.FILM_ID IN (" +
+                "FROM FILMS AS F " +
+                "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
+                "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
+                "WHERE UPPER(F.NAME) LIKE UPPER(:regex) OR F.FILM_ID IN (" +
                 "SELECT FD.FILM_ID " +
                 "FROM FILM_DIRECTORS FD " +
-                "LEFT JOIN DIRECTORS D on D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "LEFT JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
                 "WHERE UPPER(D.NAME) LIKE UPPER(:regex)" +
                 ") " +
-                "group by F.FILM_ID " +
-                "order by COUNT(L.USER_ID) DESC";
-
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(L.USER_ID) DESC";
 
         List<Film> filmList = jdbcOperations.query(sql, Map.of("regex", regex), (rs, rowNum) ->
                 makeFilm(rs, getFilmsGenresMap(), getFilmsDirectorsMap()));
@@ -239,7 +239,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilmsByYearAndGenre(int genreId, int year, int count) {
-        final String sqlQuery = "select F.FILM_ID, " +
+        final String sqlQuery = "SELECT F.FILM_ID, " +
                 "F.NAME, " +
                 "F.RELEASE_DATE, " +
                 "F.DESCRIPTION, " +
@@ -267,7 +267,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilmsByYear(int year, int count) {
-        final String sqlQuery = "select F.FILM_ID, " +
+        final String sqlQuery = "SELECT F.FILM_ID, " +
                 "F.NAME, " +
                 "F.RELEASE_DATE, " +
                 "F.DESCRIPTION, " +
@@ -291,7 +291,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilmsByGenre(int genreId, int count) {
-        final String sqlQuery = "select F.FILM_ID, " +
+        final String sqlQuery = "SELECT F.FILM_ID, " +
                 "F.NAME, " +
                 "F.RELEASE_DATE, " +
                 "F.DESCRIPTION, " +
@@ -318,7 +318,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilms(int count) {
-        final String sqlQuery = "select F.FILM_ID, " +
+        final String sqlQuery = "SELECT F.FILM_ID, " +
                 "F.NAME, " +
                 "F.RELEASE_DATE, " +
                 "F.DESCRIPTION, " +
@@ -422,29 +422,33 @@ public class FilmDbStorage implements FilmStorage {
         log.info("Добавлен жанр с ID: {} для фильма c ID {}", genreId, filmId);
     }
 
-    private void deleteGenresOfFilm(long id) {
-        String sql = "DELETE FROM FILM_GENRES WHERE FILM_ID = :id";
+    private void deleteGenresOfFilm(long filmId) {
+        String sql = "DELETE FROM FILM_GENRES WHERE FILM_ID = :filmId";
         MapSqlParameterSource map = new MapSqlParameterSource();
-        int count = jdbcOperations.update(sql, Map.of("id", id));
-        log.info("Удалено жанров {} для фильма c ID {}", count, id);
+        int count = jdbcOperations.update(sql, Map.of("filmId", filmId)); // TODO проверить возврат count
+        log.info("Удалено жанров {} для фильма c ID {}", count, filmId);
     }
 
     private void addDirectorToFilm(long filmId, int directorId) {
         String sql = "INSERT INTO FILM_DIRECTORS(FILM_ID, DIRECTOR_ID) VALUES ( :filmId, :directorId )";
-        jdbcOperations.update(sql, Map.of("filmId", filmId, "directorId", directorId));
+        int count = jdbcOperations.update(sql, Map.of("filmId", filmId, "directorId", directorId));
+        log.info("Добавлено {} режиссеров для фильма c ID {}", count, filmId);
     }
 
-    private void deleteDirectorsOfFilm(long id) {
+    private void deleteDirectorsOfFilm(long filmId) {
         String deleteSqlQuery = "DELETE FROM FILM_DIRECTORS WHERE FILM_ID = :filmId";
-        jdbcOperations.update(deleteSqlQuery, Map.of("filmId", id));
+        int count = jdbcOperations.update(deleteSqlQuery, Map.of("filmId", filmId));
+        log.info("Удалено {} режиссеров для фильма c ID {}", count, filmId);
     }
 
     private Set<Director> getDirectorListByFilmId(Long filmId) {
-        String sql = "select FD.DIRECTOR_ID, D.NAME " +
-                "FROM FILM_DIRECTORS as FD " +
+        String sql = "SELECT FD.DIRECTOR_ID, D.NAME " +
+                "FROM FILM_DIRECTORS AS FD " +
                 "JOIN DIRECTORS AS D ON FD.DIRECTOR_ID = D.DIRECTOR_ID " +
-                "where FD.FILM_ID = :filmId";
-        return new HashSet<>(jdbcOperations.query(sql, Map.of("filmId", filmId), new DirectorRowMapper()));
+                "WHERE FD.FILM_ID = :filmId";
+        Set<Director> directorsSet = new HashSet<>(jdbcOperations.query(sql, Map.of("filmId", filmId), new DirectorRowMapper()));
+        log.info("Для фильма {} найдено {} режиссеров", filmId, directorsSet.size());
+        return directorsSet;
     }
 
     private Map<Long, Set<Director>> getFilmsDirectorsMap() {
