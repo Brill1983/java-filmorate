@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -128,5 +129,11 @@ public class FilmService {
         } else {
             return filmRepository.getMostPopularFilms(count);
         }
+    }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        validationService.validUserId(userId);
+        validationService.validUserId(friendId);
+        return filmRepository.findCommonFilms(userId, friendId);
     }
 }

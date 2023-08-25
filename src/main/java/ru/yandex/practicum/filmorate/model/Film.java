@@ -35,7 +35,7 @@ public class Film {
     @Positive(message = "Продолжительность не может быть 0 или отрицательной")
     private int duration;
 
-//    private int rate;
+    private int rate;
 
     private MpaCategory mpa;
 

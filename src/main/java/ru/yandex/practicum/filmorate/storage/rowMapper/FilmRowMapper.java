@@ -13,11 +13,12 @@ public class FilmRowMapper implements RowMapper<Film> {
     public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Film.builder() // TODO change for constructor
                 .id(rs.getLong("FILM_ID"))
-                .name(rs.getString("FILM_NAME"))
+                .name(rs.getString("FILMS.NAME"))
                 .description(rs.getString("DESCRIPTION"))
-//                .rate(rs.getInt("RT"))
+                .releaseDate(rs.getDate("RELEASE_DATE").toLocalDate())
                 .duration(rs.getInt("DURATION"))
-                .mpa(new MpaCategory(rs.getInt("CATEGORY_MPA_ID"), rs.getString("MPA_NAME")))
+                .rate(rs.getInt("RATE"))
+                .mpa(new MpaCategory(rs.getInt("CATEGORY_MPA_ID"), rs.getString("MPA_CATEGORIES.NAME")))
                 .build();
     }
 }

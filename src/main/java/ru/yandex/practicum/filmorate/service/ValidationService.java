@@ -3,10 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -78,7 +75,7 @@ public class ValidationService {
         Optional<Director> director = directorRepository.getDirectorById(directorId);
         if(director.isEmpty()) {
             log.debug("Режиссер с ID: {}, отсутствует в базе", directorId);
-            throw new IncorrectParameterException("Режиссера с ID " + directorId + " нет в базе");
+            throw new DirectorNotFoundException("Режиссера с ID " + directorId + " нет в базе");
         }
     }
 

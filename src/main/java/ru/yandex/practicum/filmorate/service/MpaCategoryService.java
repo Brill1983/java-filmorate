@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
 import ru.yandex.practicum.filmorate.exceptions.MpaCategoryNotFoundException;
-//import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
 import ru.yandex.practicum.filmorate.storage.MpaCategoryDbStorage;
 
@@ -27,7 +27,7 @@ public class MpaCategoryService {
 
     public MpaCategory makeMpaCategory(MpaCategory mpaCategory) { // не нужен
         if (StringUtils.isBlank(mpaCategory.getName())) {
-//            throw new ValidationException("Название категории MPA обзятельно для заполнения");
+            throw new IncorrectRequestBodyException("Название категории MPA обзятельно для заполнения");
         }
         return mpaCategoryDbStorage.createNewMpaCategory(mpaCategory);
     }

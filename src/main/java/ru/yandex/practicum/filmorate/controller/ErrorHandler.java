@@ -24,7 +24,7 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class, MpaCategoryNotFoundException.class, GenreNotFoundException.class})
+    @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class, MpaCategoryNotFoundException.class, GenreNotFoundException.class, DirectorNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleItemNotFoundExc(RuntimeException e) {
         log.info("Element not found {}", e.getMessage());

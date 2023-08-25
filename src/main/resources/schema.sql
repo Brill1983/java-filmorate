@@ -31,7 +31,7 @@ create table if not exists FILMS
     DESCRIPTION     CHARACTER VARYING,
     CATEGORY_MPA_ID INTEGER,
     DURATION        INTEGER,
---     RATE            INTEGER,
+    RATE            INTEGER,
     constraint "FILMS_pk"
         primary key (FILM_ID),
     constraint FILMS_MPA_CATEGORIES_CATEGORY_MPA_ID_FK

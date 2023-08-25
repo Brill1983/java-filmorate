@@ -27,6 +27,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        validationService.validUserId(user.getId());
         checkUserName(user);
         return userStorage.updateUser(checkUserName(user));
     }
