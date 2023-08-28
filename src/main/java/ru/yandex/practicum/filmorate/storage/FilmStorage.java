@@ -42,4 +42,7 @@ public interface FilmStorage {
 
     List<Film> findCommonFilms(int userId, int friendId);
 
+    boolean checkFilmById(long filmId);
+
+    List<Film> getRecommendations(long userId);
 }

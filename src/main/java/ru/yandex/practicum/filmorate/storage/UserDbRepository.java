@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.rowMapper.UserRowMapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,9 +17,22 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class UserDbStorage implements UserStorage {
+public class UserDbRepository implements UserStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
+
+    @Override
+    public Optional<User> getUserById(long id) {
+        String sql = "SELECT * FROM USERS WHERE USER_ID = :id";
+        List<User> userList = jdbcTemplate.query(sql, Map.of("id", id), new UserRowMapper());
+        if (!userList.isEmpty()) {
+            log.info("Найден пользователь с ID: {} и именем {} ", userList.get(0).getId(), userList.get(0).getName());
+            return Optional.of(userList.get(0));
+        } else {
+            log.info("Пользователь c идентификатором {} не найден в БД", id);
+            return Optional.empty();
+        }
+    }
 
     @Override
     public User saveUser(User user) {
@@ -41,6 +52,24 @@ public class UserDbStorage implements UserStorage {
         user.setId(userId);
 
         return user;
+    }
+
+    @Override
+    public boolean delete(long userId) {
+        String sql = "DELETE FROM FRIENDS WHERE USER_ID = :userId OR FRIEND_ID = :userId";
+        jdbcTemplate.update(sql, Map.of("userId", userId));
+        sql = "DELETE FROM REVIEWS_LIKES WHERE USER_ID = :userId";
+        jdbcTemplate.update(sql, Map.of("userId", userId));
+        sql = "DELETE FROM REVIEWS WHERE USER_ID = :userId";
+        jdbcTemplate.update(sql, Map.of("userId", userId));
+        sql = "DELETE FROM EVENTS WHERE USER_ID = :userId";
+        jdbcTemplate.update(sql, Map.of("userId", userId));
+        sql = "DELETE FROM LIKES WHERE USER_ID = :userId";
+        jdbcTemplate.update(sql, Map.of("userId", userId));
+        sql = "DELETE FROM USERS WHERE USER_ID = :userId";
+        int count = jdbcTemplate.update(sql, Map.of("userId", userId));
+        log.info("Удален пользователь с идентификатором {}", userId);
+        return count > 0;
     }
 
     @Override
@@ -65,27 +94,4 @@ public class UserDbStorage implements UserStorage {
         log.info("Найдено {} пользователей", usersList.size());
         return usersList;
     }
-
-    @Override
-    public Optional<User> getUserById(long id) {
-        String sql = "SELECT * FROM USERS WHERE USER_ID = :id";
-        List<User> userList = jdbcTemplate.query(sql, Map.of("id", id), new UserRowMapper());
-        if (!userList.isEmpty()) {
-            log.info("Найден пользователь с ID: {} и именем {} ", userList.get(0).getId(), userList.get(0).getName());
-            return Optional.of(userList.get(0));
-        } else {
-            log.info("Пользователь c идентификатором {} не найден в БД", id);
-            return Optional.empty();
-        }
-    }
-
-//    private User makeUser(ResultSet rs) throws SQLException {
-//        return new User(
-//                rs.getLong("USER_ID"),
-//                rs.getString("EMAIL"),
-//                rs.getString("LOGIN"),
-//                rs.getString("NAME"),
-//                rs.getDate("BIRTHDAY").toLocalDate()
-//        );
-//    }
 }

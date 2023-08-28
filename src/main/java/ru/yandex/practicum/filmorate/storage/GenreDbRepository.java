@@ -16,7 +16,7 @@ import java.util.*;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class GenreDbStorage implements GenreStorage {
+public class GenreDbRepository implements GenreStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 

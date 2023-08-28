@@ -9,7 +9,7 @@ import org.springframework.test.context.jdbc.Sql;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
-import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDbRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,9 +23,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class FilmDbStorageTest {
+public class FilmDbRepositoryTest {
 
-    private final FilmDbStorage filmStorage;
+    private final FilmDbRepository filmStorage;
 
     @Test
     public void testAddFilm() {

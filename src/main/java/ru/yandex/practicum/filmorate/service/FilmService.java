@@ -20,11 +20,8 @@ public class FilmService {
 
     private final FilmStorage filmRepository;
     private final ValidationService validationService;
-
     private final LikesStorage likesRepository;
-    private final GenreStorage genreStorage;
-    private final MpaCategoryStorage mpaCategoryStorage;
-    private final DirectorRepository directorRepository;
+
 
 
     public Film getFilmById(long filmId) {
@@ -33,8 +30,7 @@ public class FilmService {
     }
 
     public List<Film> getAllFilms() {
-        // TODO лайки - в репозитории, отдельным методом, и передачей в makeFilm
-        return filmRepository.getFilmsList(); // TODO - нужно ли проверять на пустой список?
+        return filmRepository.getFilmsList();
     }
 
     public Film addFilm(Film film) {
@@ -136,4 +132,10 @@ public class FilmService {
         validationService.validUserId(friendId);
         return filmRepository.findCommonFilms(userId, friendId);
     }
+
+    public List<Film> getRecommendations(long userId) {
+        validationService.validUserId(userId);
+        return filmRepository.getRecommendations(userId);
+    }
+
 }

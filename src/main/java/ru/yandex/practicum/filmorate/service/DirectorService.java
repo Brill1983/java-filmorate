@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.storage.DirectorRepository;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.util.List;
 
@@ -14,15 +14,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DirectorService {
 
-    private final DirectorRepository directorRepository;
+    private final DirectorStorage directorStorage;
     private final ValidationService validationService;
 
     public List<Director> getAllDirectors() {
-        return directorRepository.getAllDirectors();
+        return directorStorage.getAllDirectors();
     }
 
     public Director getDirectorById(int id) {
-        return directorRepository.getDirectorById(id)
+        return directorStorage.getDirectorById(id)
                 .orElseThrow(() -> new DirectorNotFoundException("Режиссер с ID " + id + " нет в базе"));
     }
 
@@ -30,7 +30,7 @@ public class DirectorService {
         if (StringUtils.isBlank(director.getName())) {
             throw new IncorrectRequestBodyException("Имя режиссера обзятельно для заполнения");
         }
-        return directorRepository.addDirector(director);
+        return directorStorage.addDirector(director);
     }
 
     public Director updateDirector(Director director) {
@@ -38,11 +38,11 @@ public class DirectorService {
         if (StringUtils.isBlank(director.getName())) {
             throw new IncorrectRequestBodyException("Имя режиссера обзятельно для заполнения");
         }
-        return directorRepository.updateDirector(director);
+        return directorStorage.updateDirector(director);
     }
 
     public void deleteDirector(int id) {
-        directorRepository.deleteDirector(id);
+        directorStorage.deleteDirector(id);
     }
 
 }

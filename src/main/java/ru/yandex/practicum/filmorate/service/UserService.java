@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -20,6 +21,17 @@ public class UserService {
     private final UserStorage userStorage;
     private final ValidationService validationService;
     private final FriendsStorage friendsStorage;
+    private final FilmService filmService;
+
+
+    public User getUserById(long userId) {
+        return userStorage.getUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователя с ID " + userId + " нет в базе"));
+    }
+
+    public List<User> getAllUsers() {
+        return userStorage.getAllUsers();
+    }
+
 
     public User saveUser(User user) {
         checkUserName(user);
@@ -32,12 +44,8 @@ public class UserService {
         return userStorage.updateUser(checkUserName(user));
     }
 
-    public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
-    }
-
-    public User getUserById(long userId) {
-        return userStorage.getUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователя с ID " + userId + " нет в базе"));
+    public boolean delete(long userId) {
+        return userStorage.delete(userId);
     }
 
     public boolean addAsFriend(long userId, long friendId) {
@@ -70,6 +78,11 @@ public class UserService {
         validationService.validUserId(userId);
         validationService.validUserId(otherId);
         return friendsStorage.getCommonFriends(userId, otherId);
+    }
+
+    public List<Film> getRecommendations(long userId) {
+        validationService.validUserId(userId);
+        return filmService.getRecommendations(userId);
     }
 
     private User checkUserName(User user) {

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@EqualsAndHashCode(exclude = {"email", "login", "name", "birthday"})
 public class User {
 
     private long id = 0L;

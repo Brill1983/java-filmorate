@@ -19,7 +19,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class DirectorDbRepository implements DirectorRepository {
+public class DirectorDbRepository implements DirectorStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 

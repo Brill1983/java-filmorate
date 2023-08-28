@@ -21,7 +21,7 @@ public class ValidationService {
     private final GenreStorage genreStorage;
     private final MpaCategoryStorage categoryStorage;
     private final FilmStorage filmStorage;
-    private final DirectorRepository directorRepository;
+    private final DirectorStorage directorStorage;
     private final UserStorage userStorage;
 
     public void validFilm(Film film) {
@@ -44,7 +44,7 @@ public class ValidationService {
             }
         }
         if (!film.getDirectors().isEmpty()) {
-            List<Integer> dirIdList = directorRepository.findAllDirectorsIds();
+            List<Integer> dirIdList = directorStorage.findAllDirectorsIds();
 
             film.getDirectors().forEach(director -> {
                 if(!dirIdList.contains(director.getId())) {
@@ -63,16 +63,15 @@ public class ValidationService {
         }
     }
 
-    public void validFilmId(long id) {
-        Optional<Film> film = filmStorage.getFilmById(id);
-        if (film.isEmpty()) {
-            log.debug("В фильм с ID: {}, отсутствует в базе", id);
-            throw new FilmNotFoundException("Фильма с ID " + id + " нет в базе");
+    public void validFilmId(long filmId) {
+        if (!filmStorage.checkFilmById(filmId)) {
+            log.debug("В фильм с ID: {}, отсутствует в базе", filmId);
+            throw new FilmNotFoundException("Фильма с ID " + filmId + " нет в базе");
         }
     }
 
     public void validDirectorId(int directorId) {
-        Optional<Director> director = directorRepository.getDirectorById(directorId);
+        Optional<Director> director = directorStorage.getDirectorById(directorId);
         if(director.isEmpty()) {
             log.debug("Режиссер с ID: {}, отсутствует в базе", directorId);
             throw new DirectorNotFoundException("Режиссера с ID " + directorId + " нет в базе");

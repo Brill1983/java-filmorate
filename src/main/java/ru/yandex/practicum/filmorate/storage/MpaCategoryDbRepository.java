@@ -20,7 +20,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class MpaCategoryDbStorage implements MpaCategoryStorage {
+public class MpaCategoryDbRepository implements MpaCategoryStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 
