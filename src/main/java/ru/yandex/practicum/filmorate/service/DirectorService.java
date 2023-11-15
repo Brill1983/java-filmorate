@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
@@ -23,7 +23,7 @@ public class DirectorService {
 
     public Director getDirectorById(int id) {
         return directorStorage.getDirectorById(id)
-                .orElseThrow(() -> new DirectorNotFoundException("Режиссер с ID " + id + " нет в базе"));
+                .orElseThrow(() -> new ObjectNotFoundException("Режиссер с ID " + id + " нет в базе"));
     }
 
     public Director addDirector(Director director) {

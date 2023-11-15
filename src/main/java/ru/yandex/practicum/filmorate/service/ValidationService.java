@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
@@ -23,6 +20,7 @@ public class ValidationService {
     private final FilmStorage filmStorage;
     private final DirectorStorage directorStorage;
     private final UserStorage userStorage;
+    private final ReviewStorage reviewStorage;
 
     public void validFilm(Film film) {
 
@@ -59,14 +57,14 @@ public class ValidationService {
         Optional<User> user = userStorage.getUserById(userId);
         if (user.isEmpty()) {
             log.debug("Пользователь с ID: {}, отсутствует в базе", userId);
-            throw new UserNotFoundException("Пользователя с ID " + userId + " нет в базе");
+            throw new ObjectNotFoundException("Пользователя с ID " + userId + " нет в базе");
         }
     }
 
     public void validFilmId(long filmId) {
         if (!filmStorage.checkFilmById(filmId)) {
             log.debug("В фильм с ID: {}, отсутствует в базе", filmId);
-            throw new FilmNotFoundException("Фильма с ID " + filmId + " нет в базе");
+            throw new ObjectNotFoundException("Фильма с ID " + filmId + " нет в базе");
         }
     }
 
@@ -74,7 +72,7 @@ public class ValidationService {
         Optional<Director> director = directorStorage.getDirectorById(directorId);
         if(director.isEmpty()) {
             log.debug("Режиссер с ID: {}, отсутствует в базе", directorId);
-            throw new DirectorNotFoundException("Режиссера с ID " + directorId + " нет в базе");
+            throw new ObjectNotFoundException("Режиссера с ID " + directorId + " нет в базе");
         }
     }
 

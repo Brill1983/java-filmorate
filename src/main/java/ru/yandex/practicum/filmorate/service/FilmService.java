@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,11 +21,9 @@ public class FilmService {
     private final ValidationService validationService;
     private final LikesStorage likesRepository;
 
-
-
     public Film getFilmById(long filmId) {
         return filmRepository.getFilmById(filmId)
-                .orElseThrow(() -> new FilmNotFoundException("Фильма с ID " + filmId + " нет в базе"));
+                .orElseThrow(() -> new ObjectNotFoundException("Фильма с ID " + filmId + " нет в базе"));
     }
 
     public List<Film> getAllFilms() {
@@ -35,8 +32,7 @@ public class FilmService {
 
     public Film addFilm(Film film) {
         validationService.validFilm(film);
-        Film backedFilm =  filmRepository.addFilm(film);
-        return getFilmById(backedFilm.getId());
+        return filmRepository.addFilm(film);
     }
 
     public boolean delete(long filmId) {
@@ -46,8 +42,7 @@ public class FilmService {
     public Film updateFilm(Film film) {
         validationService.validFilmId(film.getId());
         validationService.validFilm(film);
-        Film backedFilm = filmRepository.updateFilm(film);
-        return getFilmById(backedFilm.getId());
+        return filmRepository.updateFilm(film);
     }
 
     public void userLikedFilm(long filmId, long userId) {
@@ -137,5 +132,4 @@ public class FilmService {
         validationService.validUserId(userId);
         return filmRepository.getRecommendations(userId);
     }
-
 }

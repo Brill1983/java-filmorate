@@ -1,18 +1,21 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.validator.Create;
+import ru.yandex.practicum.filmorate.validator.Update;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/films")
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class FilmController {
 
     private final FilmService filmService;
@@ -33,12 +36,12 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody @Valid Film film) {
+    public Film addFilm(@RequestBody @Validated(Create.class) Film film) {
         return filmService.addFilm(film);
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@RequestBody @Validated(Update.class)Film film) {
         return filmService.updateFilm(film);
     }
 

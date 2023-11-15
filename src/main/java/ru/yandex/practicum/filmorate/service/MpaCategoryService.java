@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
-import ru.yandex.practicum.filmorate.exceptions.MpaCategoryNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
 import ru.yandex.practicum.filmorate.storage.MpaCategoryDbRepository;
 
@@ -22,7 +22,7 @@ public class MpaCategoryService {
 
     public MpaCategory findMpaCategoryById(int id) {
         return mpaCategoryDbRepository.findMpaCategoryById(id).orElseThrow(() ->
-                new MpaCategoryNotFoundException("Категории с ID " + id + " нет в базе"));
+                new ObjectNotFoundException("Категории с ID " + id + " нет в базе"));
     }
 
     public MpaCategory makeMpaCategory(MpaCategory mpaCategory) { // не нужен

@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import ru.yandex.practicum.filmorate.validator.Create;
 import ru.yandex.practicum.filmorate.validator.ReleaseDateConstrain;
+import ru.yandex.practicum.filmorate.validator.Update;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -23,16 +25,16 @@ public class Film {
 
     private long id = 0L;
 
-    @NotBlank(message = "Название фильма - обязательно к заполнению")
+    @NotBlank(groups = Create.class, message = "Название фильма - обязательно к заполнению")
     private String name;
 
-    @Size(max = 200, message = "Длина описания не должна превышать 200 символов")
+    @Size(groups = {Create.class, Update.class}, max = 200, message = "Длина описания не должна превышать 200 символов")
     private String description;
 
-    @ReleaseDateConstrain
+    @ReleaseDateConstrain(groups = {Create.class, Update.class})
     private LocalDate releaseDate;
 
-    @Positive(message = "Продолжительность не может быть 0 или отрицательной")
+    @Positive(groups = {Create.class, Update.class}, message = "Продолжительность не может быть 0 или отрицательной")
     private int duration;
 
     private int rate;

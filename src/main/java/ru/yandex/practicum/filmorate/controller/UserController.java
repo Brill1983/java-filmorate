@@ -1,10 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.validator.Create;
+import ru.yandex.practicum.filmorate.validator.Update;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -12,6 +15,7 @@ import java.util.List;
 @RequestMapping("/users")
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -32,12 +36,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User saveUser(@RequestBody @Valid User user) {
+    public User saveUser(@RequestBody @Validated(Create.class) User user) {
         return userService.saveUser(user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody @Valid User user) {
+    public User updateUser(@RequestBody @Validated(Update.class) User user) {
         return userService.updateUser(user);
     }
 
