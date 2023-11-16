@@ -36,7 +36,7 @@ public class DirectorDbRepository implements DirectorStorage {
         String sql = "SELECT DIRECTOR_ID FROM DIRECTORS";
         SqlRowSet rows = jdbcTemplate.getJdbcOperations().queryForRowSet(sql);
         List<Integer> dirIdList = new ArrayList<>();
-        while(rows.next()) {
+        while (rows.next()) {
             dirIdList.add(rows.getInt("DIRECTOR_ID"));
         }
         log.info("Найдено в базе {} ID режиссеров", dirIdList.size());
@@ -65,7 +65,7 @@ public class DirectorDbRepository implements DirectorStorage {
         jdbcTemplate.update(sql, map, keyHolder);
         director.setId(keyHolder.getKey().intValue());
         log.info("Внесен новый режиссер {} c ID {}", director.getName(), director.getId());
-        return director;
+        return getDirectorById(director.getId()).get();
     }
 
     @Override
@@ -76,7 +76,7 @@ public class DirectorDbRepository implements DirectorStorage {
         map.addValue("name", director.getName());
         jdbcTemplate.update(sql, map);
         log.info("Режиссер ID {} изменен на {}", director.getId(), director.getName());
-        return director;
+        return getDirectorById(director.getId()).get();
     }
 
     @Override

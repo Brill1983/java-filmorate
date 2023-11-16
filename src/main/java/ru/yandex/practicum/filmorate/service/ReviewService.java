@@ -2,15 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
-import ru.yandex.practicum.filmorate.exceptions.LikeAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 
@@ -18,22 +17,15 @@ import java.util.List;
 @Service
 public class ReviewService {
 
-    private final ReviewStorage reviewStorage;
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
-    //    private final EventRepository eventRepository;
+    private final ReviewStorage reviewRepository;
+    private final EventStorage eventRepository;
     private final ValidationService validationService;
 
     public Review addReview(Review review) {
         validationService.validUserId(review.getUserId());
         validationService.validFilmId(review.getFilmId());
-
-
-//        eventRepository.add(EventRepository.createEvent(review.getUserId(),
-//                EventType.REVIEW,
-//                review.getReviewId(),
-//                Operation.ADD));
-        return reviewStorage.addReview(review);
+        eventRepository.add(new Event(review.getUserId(), EventType.REVIEW, review.getReviewId(), Operation.ADD));
+        return reviewRepository.addReview(review);
     }
 
     public Review updateReview(Review review) {
@@ -48,27 +40,21 @@ public class ReviewService {
             throw new IncorrectRequestBodyException("Отзыв с ID " + review.getReviewId() + ", написан к фильму с ID " +
                     reviewFromDb.getFilmId() + ", а не к фильму с ID " + review.getFilmId());
         }
-//        eventRepository.add(EventRepository.createEvent(getReviewById(review.getReviewId()).getUserId(),
-//                EventType.REVIEW,
-//                review.getReviewId(),
-//                Operation.UPDATE));
-
-        return reviewStorage.updateReview(review);
+        eventRepository.add(new Event(review.getUserId(), EventType.REVIEW, review.getReviewId(), Operation.UPDATE));
+        return reviewRepository.updateReview(review);
     }
 
     public boolean deleteReviewById(long id) {
-        boolean isDelete = reviewStorage.deleteReviewById(id);
-//        if (isDelete) {
-//              eventRepository.add(EventRepository.createEvent(getReviewById(id).getUserId(),
-//                EventType.REVIEW,
-//                id,
-//                Operation.REMOVE));
-//        }
+        getReviewById(id);
+        boolean isDelete = reviewRepository.deleteReviewById(id);
+        if (isDelete) {
+            eventRepository.add(new Event(getReviewById(id).getUserId(), EventType.REVIEW, id, Operation.REMOVE));
+        }
         return isDelete;
     }
 
     public Review getReviewById(long id) {
-        return reviewStorage.getReviewById(id)
+        return reviewRepository.getReviewById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Отзыва с ID " + id + " нет в базе"));
     }
 
@@ -76,46 +62,26 @@ public class ReviewService {
         if (filmId != 0) {
             validationService.validFilmId(filmId);
         }
-        return reviewStorage.getAllReviewByFilmId(filmId, count);
+        return reviewRepository.getAllReviewByFilmId(filmId, count);
     }
 
     public void addLike(long reviewId, long userId) {
-        validationService.validUserId(userId);
-        Review receivedReview = getReviewById(reviewId);
-        if (receivedReview.getUserId() == userId) {
-            throw new IncorrectParameterException("Отзыв с ID " + reviewId + ", написан пользователем с ID " +
-                    userId + ", нельзя оценивать свой отзыв");
-        }
-        reviewStorage.addLike(reviewId, userId);
+        validationService.validReviewAuthor(reviewId, userId);
+        reviewRepository.addLike(reviewId, userId);
     }
 
     public void addDislike(long reviewId, long userId) {
-        validationService.validUserId(userId);
-        Review receivedReview = getReviewById(reviewId);
-        if (receivedReview.getUserId() == userId) {
-            throw new IncorrectParameterException("Отзыв с ID " + reviewId + ", написан пользователем с ID " +
-                    userId + ", нельзя оценивать свой отзыв");
-        }
-        reviewStorage.addDislike(reviewId, userId);
+        validationService.validReviewAuthor(reviewId, userId);
+        reviewRepository.addDislike(reviewId, userId);
     }
 
     public void deleteLike(long reviewId, long userId) {
-        validationService.validUserId(userId);
-        Review receivedReview = getReviewById(reviewId);
-        if (receivedReview.getUserId() == userId) {
-            throw new IncorrectParameterException("Отзыв с ID " + reviewId + ", написан пользователем с ID " +
-                    userId + ", нельзя оценивать свой отзыв");
-        }
-        reviewStorage.deleteLike(reviewId, userId);
+        validationService.validReviewAuthor(reviewId, userId);
+        reviewRepository.deleteLike(reviewId, userId);
     }
 
     public void deleteDislike(long reviewId, long userId) {
-        validationService.validUserId(userId);
-        Review receivedReview = getReviewById(reviewId);
-        if (receivedReview.getUserId() == userId) {
-            throw new IncorrectParameterException("Отзыв с ID " + reviewId + ", написан пользователем с ID " +
-                    userId + ", нельзя оценивать свой отзыв");
-        }
-        reviewStorage.deleteDislike(reviewId, userId);
+        validationService.validReviewAuthor(reviewId, userId);
+        reviewRepository.deleteDislike(reviewId, userId);
     }
 }

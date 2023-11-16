@@ -58,6 +58,9 @@ public class ReviewDbRepository implements ReviewStorage {
         String sql = "DELETE FROM REVIEWS " +
                 "WHERE REVIEW_ID = :reviewId ";
         int count = jdbcOperations.update(sql, Map.of("reviewId", id));
+        if (count > 0) {
+            log.info("Удален отзыв с идентификатором {}", id);
+        }
         return count > 0;
     }
 
@@ -115,6 +118,7 @@ public class ReviewDbRepository implements ReviewStorage {
             mapForSetLike.addValue("userId", userId);
             mapForSetLike.addValue("isLike", isLike);
             jdbcOperations.update(sql, mapForSetLike);
+            log.info("Добавлен лайк к отзыву {} от пользователя {}", reviewId, userId);
             incrementUseful(reviewId);
         } else if (reviewLikeRows.next() && !reviewLikeRows.getBoolean("ISLIKE")) {
             String sql = "UPDATE REVIEWS_LIKES " +
@@ -125,6 +129,7 @@ public class ReviewDbRepository implements ReviewStorage {
             mapForUpdateLike.addValue("userId", userId);
             mapForUpdateLike.addValue("isLike", isLike);
             jdbcOperations.update(sql, mapForUpdateLike);
+            log.info("Лайк к отзыву {} от пользователя {} изменен на дизлайк", reviewId, userId);
             incrementUseful(reviewId);
         } else {
             throw new LikeAlreadyExistException("Данный пользователь уже ставил лайк");
@@ -149,6 +154,7 @@ public class ReviewDbRepository implements ReviewStorage {
             mapForSetDisLike.addValue("userId", userId);
             mapForSetDisLike.addValue("isLike", isLike);
             jdbcOperations.update(sql, mapForSetDisLike);
+            log.info("Добавлен дизлайк к отзыву {} от пользователя {}", reviewId, userId);
             decrementUseful(reviewId);
         } else if (reviewLikeRows.next() && reviewLikeRows.getBoolean("ISLIKE")) {
             String sql = "UPDATE REVIEWS_LIKES " +
@@ -159,6 +165,7 @@ public class ReviewDbRepository implements ReviewStorage {
             mapForUpdateLike.addValue("userId", userId);
             mapForUpdateLike.addValue("isLike", isLike);
             jdbcOperations.update(sql, mapForUpdateLike);
+            log.info("Дизлайк к отзыву {} от пользователя {} изменен на лайк", reviewId, userId);
             decrementUseful(reviewId);
         } else {
             throw new LikeAlreadyExistException("Данный пользователь уже ставил дизлайк");
@@ -199,11 +206,13 @@ public class ReviewDbRepository implements ReviewStorage {
         String sqlForReviews = "UPDATE REVIEWS SET USEFUL = USEFUL + 1 " +
                 "WHERE REVIEW_ID = :reviewId ";
         jdbcOperations.update(sqlForReviews, Map.of("reviewId", reviewId));
+        log.info("Полезность отзыва {} повышена", reviewId);
     }
 
     private void decrementUseful(long reviewId) {
         String sqlForReviews = "UPDATE REVIEWS SET USEFUL = USEFUL - 1 " +
                 "WHERE REVIEW_ID = :reviewId ";
         jdbcOperations.update(sqlForReviews, Map.of("reviewId", reviewId));
+        log.info("Полезность отзыва {} понижена", reviewId);
     }
 }

@@ -2,8 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.validator.Create;
-import ru.yandex.practicum.filmorate.validator.Update;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

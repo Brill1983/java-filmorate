@@ -41,7 +41,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody @Validated(Update.class)Film film) {
+    public Film updateFilm(@RequestBody @Validated(Update.class) Film film) {
         return filmService.updateFilm(film);
     }
 
@@ -66,7 +66,7 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film>  getFilmDirectorsSortedList(@PathVariable int directorId, @RequestParam String sortBy) {
+    public List<Film> getFilmDirectorsSortedList(@PathVariable int directorId, @RequestParam String sortBy) {
         return filmService.getFilmDirectorsSortedList(directorId, sortBy);
     }
 
@@ -84,6 +84,6 @@ public class FilmController {
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam("userId") int userId, @RequestParam("friendId") int friendId) {
-        return filmService.getCommonFilms(userId,friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 }

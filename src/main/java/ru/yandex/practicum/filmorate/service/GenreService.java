@@ -14,20 +14,20 @@ import java.util.List;
 @AllArgsConstructor
 public class GenreService {
 
-    private final GenreStorage genreStorage;
+    private final GenreStorage genreRepository;
 
     public List<Genre> findAllGenres() {
-        return genreStorage.findAllGenres();
+        return genreRepository.findAllGenres();
     }
 
     public Genre findGenreById(int id) {
-        return genreStorage.findGenreById(id).orElseThrow(() -> new ObjectNotFoundException("Жанра с ID " + id + " нет в базе"));
+        return genreRepository.findGenreById(id).orElseThrow(() -> new ObjectNotFoundException("Жанра с ID " + id + " нет в базе"));
     }
 
     public Genre addGenre(Genre genre) {
         if (StringUtils.isBlank(genre.getName())) {
             throw new IncorrectRequestBodyException("Название жанра обзятельно для заполнения");
         }
-        return genreStorage.createNewGenre(genre);
+        return genreRepository.createNewGenre(genre);
     }
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
-import ru.yandex.practicum.filmorate.storage.MpaCategoryDbRepository;
+import ru.yandex.practicum.filmorate.storage.MpaCategoryStorage;
 
 import java.util.List;
 
@@ -14,14 +14,14 @@ import java.util.List;
 @AllArgsConstructor
 public class MpaCategoryService {
 
-    private final MpaCategoryDbRepository mpaCategoryDbRepository;
+    private final MpaCategoryStorage mpaCategoryRepository;
 
     public List<MpaCategory> findAllMpaCategories() {
-        return mpaCategoryDbRepository.findAllMpaCategories();
+        return mpaCategoryRepository.findAllMpaCategories();
     }
 
     public MpaCategory findMpaCategoryById(int id) {
-        return mpaCategoryDbRepository.findMpaCategoryById(id).orElseThrow(() ->
+        return mpaCategoryRepository.findMpaCategoryById(id).orElseThrow(() ->
                 new ObjectNotFoundException("Категории с ID " + id + " нет в базе"));
     }
 
@@ -29,6 +29,6 @@ public class MpaCategoryService {
         if (StringUtils.isBlank(mpaCategory.getName())) {
             throw new IncorrectRequestBodyException("Название категории MPA обзятельно для заполнения");
         }
-        return mpaCategoryDbRepository.createNewMpaCategory(mpaCategory);
+        return mpaCategoryRepository.createNewMpaCategory(mpaCategory);
     }
 }

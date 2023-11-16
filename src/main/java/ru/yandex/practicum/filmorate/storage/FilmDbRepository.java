@@ -85,7 +85,7 @@ public class FilmDbRepository implements FilmStorage {
         film.getDirectors()
                 .forEach(director -> addDirectorToFilm(film.getId(), director.getId()));
         log.info("В базу занесен фильм с идентификатором {}", film.getId());
-        return getFilmById(film.getId()).get(); // можно вернуть film, если результат jdbcOperations.update(..) > 0
+        return getFilmById(film.getId()).get();
     }
 
     @Override
@@ -97,6 +97,8 @@ public class FilmDbRepository implements FilmStorage {
         jdbcOperations.update(sql, Map.of("filmId", filmId));
         //TODO добавить удаление ревью
         sql = "DELETE FROM FILM_DIRECTORS WHERE FILM_ID = :filmId";
+        jdbcOperations.update(sql, Map.of("filmId", filmId));
+        sql = "DELETE FROM REVIEWS WHERE FILM_ID = :filmId";
         jdbcOperations.update(sql, Map.of("filmId", filmId));
         sql = "DELETE FROM FILMS WHERE FILM_ID = :filmId";
         int count = jdbcOperations.update(sql, Map.of("filmId", filmId));
@@ -709,7 +711,7 @@ public class FilmDbRepository implements FilmStorage {
 
     private void deleteGenresOfFilm(long filmId) {
         String sql = "DELETE FROM FILM_GENRES WHERE FILM_ID = :filmId";
-        int count = jdbcOperations.update(sql, Map.of("filmId", filmId)); // TODO проверить возврат count
+        int count = jdbcOperations.update(sql, Map.of("filmId", filmId));
         log.info("Удалено жанров {} для фильма c ID {}", count, filmId);
     }
 

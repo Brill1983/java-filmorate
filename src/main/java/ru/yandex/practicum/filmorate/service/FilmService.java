@@ -3,14 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikesStorage;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -20,6 +20,7 @@ public class FilmService {
     private final FilmStorage filmRepository;
     private final ValidationService validationService;
     private final LikesStorage likesRepository;
+    private final EventStorage eventRepository;
 
     public Film getFilmById(long filmId) {
         return filmRepository.getFilmById(filmId)
@@ -36,6 +37,7 @@ public class FilmService {
     }
 
     public boolean delete(long filmId) {
+        validationService.validFilmId(filmId);
         return filmRepository.delete(filmId);
     }
 
@@ -52,6 +54,7 @@ public class FilmService {
             log.info("У фильма с ID {} уже есть лайк от пользователя {}", filmId, userId);
         } else {
             likesRepository.userLikedFilm(filmId, userId);
+            eventRepository.add(new Event(userId, EventType.LIKE, filmId, Operation.ADD));
             log.info("Фильму с ID {} добавлен лайк от пользователя {}", filmId, userId);
         }
     }
@@ -59,12 +62,14 @@ public class FilmService {
     public void deleteLike(long filmId, long userId) {
         validationService.validUserId(userId);
         validationService.validFilmId(filmId);
-
         if (likesRepository.checkUserLikedFilm(filmId, userId)) {
             log.info("У фильма с ID {} есть лайк от пользователя {}, можно смело удалять", filmId, userId);
             likesRepository.deleteLike(filmId, userId);
+            eventRepository.add(new Event(userId, EventType.LIKE, filmId, Operation.REMOVE));
         } else {
             log.info("У фильма с ID {} нет лайка от пользователя {}, удалять нечего", filmId, userId);
+            throw new ObjectNotFoundException("У фильма " + filmId + " нет лайка от пользователя " + userId +
+                    ", удалять нечего");
         }
     }
 

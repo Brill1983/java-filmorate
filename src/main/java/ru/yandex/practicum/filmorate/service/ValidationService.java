@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.*;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.*;
 
@@ -28,7 +30,7 @@ public class ValidationService {
             List<Integer> genresIdList = genreStorage.findAllGenresIds();
 
             film.getGenres().forEach(genre -> {
-                if(!genresIdList.contains(genre.getId())) {
+                if (!genresIdList.contains(genre.getId())) {
                     log.debug("В запросе передан фильм с неправильным id жанра {}", genre.getId());
                     throw new IncorrectRequestBodyException("Жанр должен соответствовать базе данных");
                 }
@@ -45,7 +47,7 @@ public class ValidationService {
             List<Integer> dirIdList = directorStorage.findAllDirectorsIds();
 
             film.getDirectors().forEach(director -> {
-                if(!dirIdList.contains(director.getId())) {
+                if (!dirIdList.contains(director.getId())) {
                     log.debug("В запросе передан фильм с неправильным id режиссера {}", director.getId());
                     throw new IncorrectRequestBodyException("Режиссер должен соответствовать базе данных");
                 }
@@ -70,7 +72,7 @@ public class ValidationService {
 
     public void validDirectorId(int directorId) {
         Optional<Director> director = directorStorage.getDirectorById(directorId);
-        if(director.isEmpty()) {
+        if (director.isEmpty()) {
             log.debug("Режиссер с ID: {}, отсутствует в базе", directorId);
             throw new ObjectNotFoundException("Режиссера с ID " + directorId + " нет в базе");
         }
@@ -78,9 +80,24 @@ public class ValidationService {
 
     public void validGenreId(Integer genreId) {
         Optional<Genre> genre = genreStorage.findGenreById(genreId);
-        if(genre.isEmpty()) {
+        if (genre.isEmpty()) {
             log.debug("Жанр с ID: {}, отсутствует в базе", genreId);
             throw new IncorrectParameterException("Жанра с ID " + genreId + " нет в базе");
+        }
+    }
+
+    public void validReviewAuthor(long reviewId, long userId) {
+        validUserId(userId);
+        Optional<Review> receivedReview = reviewStorage.getReviewById(reviewId);
+        if (receivedReview.isEmpty()) {
+            log.debug("Отзыв с ID: {}, отсутствует в базе", reviewId);
+            throw new ObjectNotFoundException("Отзыва с ID " + reviewId + " нет в базе");
+        }
+
+        if (receivedReview.get().getUserId() == userId) {
+            log.debug("Отзыв с ID: {}, написан пользователем с ID {}, нельзя оценивать свой отзыв", reviewId, userId);
+            throw new IncorrectParameterException("Отзыв с ID " + reviewId + ", написан пользователем с ID " +
+                    userId + ", нельзя оценивать свой отзыв");
         }
     }
 }

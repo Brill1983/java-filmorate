@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.exceptions;
 
 public class LikeAlreadyExistException extends RuntimeException {
-    public LikeAlreadyExistException(String msg) {
-        super(msg);
+    public LikeAlreadyExistException(String message) {
+        super(message);
     }
 }

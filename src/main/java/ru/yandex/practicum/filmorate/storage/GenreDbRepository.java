@@ -68,7 +68,8 @@ public class GenreDbRepository implements GenreStorage {
         return genresIdList;
     }
 
-    //    @Override
+    // TODO clean
+//        @Override
 //    public List<Genre> findGenresByFilmId(long id) {
 //        String sql = "SELECT FG.GENRE_ID, G2.NAME FROM FILM_GENRES AS FG " +
 //                "JOIN GENRES AS G2 on FG.GENRE_ID = G2.GENRE_ID " +

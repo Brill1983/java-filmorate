@@ -17,14 +17,14 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class UserDbRepository implements UserStorage {
+public class UserDbRepository implements UserStorage { // TODO везде обавить логирование
 
-    private final NamedParameterJdbcOperations jdbcTemplate;
+    private final NamedParameterJdbcOperations jdbcOperations;
 
     @Override
     public Optional<User> getUserById(long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = :id";
-        List<User> userList = jdbcTemplate.query(sql, Map.of("id", id), new UserRowMapper());
+        List<User> userList = jdbcOperations.query(sql, Map.of("id", id), new UserRowMapper());
         if (!userList.isEmpty()) {
             log.info("Найден пользователь с ID: {} и именем {} ", userList.get(0).getId(), userList.get(0).getName());
             return Optional.of(userList.get(0));
@@ -47,27 +47,27 @@ public class UserDbRepository implements UserStorage {
         map.addValue("login", user.getLogin());
         map.addValue("birthday", user.getBirthday());
 
-        jdbcTemplate.update(sql, map, keyHolder);
-        Long userId = keyHolder.getKey().longValue();
-        user.setId(userId);
+        jdbcOperations.update(sql, map, keyHolder);
+        user.setId(keyHolder.getKey().longValue());
+        log.info("Пользователь {} сохранен", user);
 
-        return user;
+        return getUserById(user.getId()).get();
     }
 
     @Override
     public boolean delete(long userId) {
         String sql = "DELETE FROM FRIENDS WHERE USER_ID = :userId OR FRIEND_ID = :userId";
-        jdbcTemplate.update(sql, Map.of("userId", userId));
+        jdbcOperations.update(sql, Map.of("userId", userId));
         sql = "DELETE FROM REVIEWS_LIKES WHERE USER_ID = :userId";
-        jdbcTemplate.update(sql, Map.of("userId", userId));
+        jdbcOperations.update(sql, Map.of("userId", userId));
         sql = "DELETE FROM REVIEWS WHERE USER_ID = :userId";
-        jdbcTemplate.update(sql, Map.of("userId", userId));
+        jdbcOperations.update(sql, Map.of("userId", userId));
         sql = "DELETE FROM EVENTS WHERE USER_ID = :userId";
-        jdbcTemplate.update(sql, Map.of("userId", userId));
+        jdbcOperations.update(sql, Map.of("userId", userId));
         sql = "DELETE FROM LIKES WHERE USER_ID = :userId";
-        jdbcTemplate.update(sql, Map.of("userId", userId));
+        jdbcOperations.update(sql, Map.of("userId", userId));
         sql = "DELETE FROM USERS WHERE USER_ID = :userId";
-        int count = jdbcTemplate.update(sql, Map.of("userId", userId));
+        int count = jdbcOperations.update(sql, Map.of("userId", userId));
         log.info("Удален пользователь с идентификатором {}", userId);
         return count > 0;
     }
@@ -83,14 +83,15 @@ public class UserDbRepository implements UserStorage {
         map.addValue("login", user.getLogin());
         map.addValue("birthday", user.getBirthday());
 
-        jdbcTemplate.update(sql, map);
-        return user;
+        jdbcOperations.update(sql, map);
+        log.info("Пользователь с ID {} изменен", user.getId());
+        return getUserById(user.getId()).get();
     }
 
     @Override
     public List<User> getAllUsers() {
         String sql = "SELECT * FROM USERS";
-        List<User> usersList = jdbcTemplate.query(sql, new UserRowMapper());
+        List<User> usersList = jdbcOperations.query(sql, new UserRowMapper());
         log.info("Найдено {} пользователей", usersList.size());
         return usersList;
     }
