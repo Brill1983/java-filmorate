@@ -24,31 +24,32 @@ public class ReviewService {
     public Review addReview(Review review) {
         validationService.validUserId(review.getUserId());
         validationService.validFilmId(review.getFilmId());
-        eventRepository.add(new Event(review.getUserId(), EventType.REVIEW, review.getReviewId(), Operation.ADD));
-        return reviewRepository.addReview(review);
+        Review reviewFromDb = reviewRepository.addReview(review);
+        eventRepository.add(new Event(review.getUserId(), EventType.REVIEW, reviewFromDb.getReviewId(), Operation.ADD));
+        return reviewFromDb;
     }
 
     public Review updateReview(Review review) {
         Review reviewFromDb = getReviewById(review.getReviewId());
         validationService.validUserId(review.getUserId());
-        validationService.validFilmId(review.getFilmId());
-        if (!reviewFromDb.getUserId().equals(review.getUserId())) {
-            throw new IncorrectRequestBodyException("Отзыв с ID " + review.getReviewId() + ", написан пользователем с ID " +
-                    reviewFromDb.getUserId() + ", пользователь с ID " + review.getUserId() + "не имеет права исправлять чужой отзыв");
-        }
-        if (!reviewFromDb.getFilmId().equals(review.getFilmId())) {
-            throw new IncorrectRequestBodyException("Отзыв с ID " + review.getReviewId() + ", написан к фильму с ID " +
-                    reviewFromDb.getFilmId() + ", а не к фильму с ID " + review.getFilmId());
-        }
+        validationService.validFilmId(review.getFilmId()); // TODO clean
+//        if (!reviewFromDb.getUserId().equals(review.getUserId())) {
+//            throw new IncorrectRequestBodyException("Отзыв с ID " + review.getReviewId() + ", написан пользователем с ID " +
+//                    reviewFromDb.getUserId() + ", пользователь с ID " + review.getUserId() + "не имеет права исправлять чужой отзыв");
+//        }
+//        if (!reviewFromDb.getFilmId().equals(review.getFilmId())) {
+//            throw new IncorrectRequestBodyException("Отзыв с ID " + review.getReviewId() + ", написан к фильму с ID " +
+//                    reviewFromDb.getFilmId() + ", а не к фильму с ID " + review.getFilmId());
+//        }
         eventRepository.add(new Event(review.getUserId(), EventType.REVIEW, review.getReviewId(), Operation.UPDATE));
         return reviewRepository.updateReview(review);
     }
 
     public boolean deleteReviewById(long id) {
-        getReviewById(id);
+        Review review = getReviewById(id);
         boolean isDelete = reviewRepository.deleteReviewById(id);
         if (isDelete) {
-            eventRepository.add(new Event(getReviewById(id).getUserId(), EventType.REVIEW, id, Operation.REMOVE));
+            eventRepository.add(new Event(review.getUserId(), EventType.REVIEW, id, Operation.REMOVE));
         }
         return isDelete;
     }

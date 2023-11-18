@@ -24,7 +24,7 @@ public class EventDbRepository implements EventStorage { // TODO везде об
     @Override
     public Optional<Event> getEventById(long eventId) {
         String sql = "SELECT * FROM EVENTS WHERE EVENT_ID = :eventId";
-        List<Event> eventList = jdbcOperations.queryForList(sql, Map.of("eventId", eventId), Event.class);
+        List<Event> eventList = jdbcOperations.query(sql, Map.of("eventId", eventId), new EventRowMapper());
         if (!eventList.isEmpty()) {
             log.info("Найдено событие {}", eventList.get(0));
             return Optional.of(eventList.get(0));

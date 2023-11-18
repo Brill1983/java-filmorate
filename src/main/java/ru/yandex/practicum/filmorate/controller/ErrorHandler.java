@@ -33,7 +33,7 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleObjectNotFoundExc(ObjectNotFoundException e) {
         log.info("Element not found {}", e.getMessage());

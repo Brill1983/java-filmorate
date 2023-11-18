@@ -284,7 +284,7 @@ public class FilmDbRepository implements FilmStorage {
                 "WHERE F.FILM_ID IN (" +
                 "SELECT FILM_ID " +
                 "FROM FILM_GENRES " +
-                "WHERE GENRE_ID = :genreid) " +
+                "WHERE GENRE_ID = :genreId) " +
                 "AND EXTRACT(YEAR FROM F.RELEASE_DATE) = :year " +
                 "GROUP BY F.FILM_ID " +
 //                "order by COUNT(L.USER_ID) " +
@@ -298,8 +298,11 @@ public class FilmDbRepository implements FilmStorage {
 //        List<Film> filmList = jdbcOperations.query(sql, Map.of("genreId", genreId, "year", year, "count", count),
 //                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
-        List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("genreId", genreId, "year", year, "count", count),
-                new FilmRowMapper()));
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("genreId", genreId);
+        map.addValue("year", year);
+        map.addValue("count", count);
+        List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, map, new FilmRowMapper()));
 
         log.info("Поиск ТОП {} фильмов в жанре c ID {} за {} год дал {} резльтатов", count, genreId, year, filmList.size());
         return filmList;
@@ -332,7 +335,10 @@ public class FilmDbRepository implements FilmStorage {
 //        List<Film> filmList = jdbcOperations.query(sql, Map.of("year", year, "count", count),
 //                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
-        List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("year", year, "count", count), new FilmRowMapper()));
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("year", year);
+        map.addValue("count", count);
+        List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, map, new FilmRowMapper()));
 
         log.info("Поиск ТОП {} фильмов за {} год дал {} резльтатов", count, year, filmList.size());
         return filmList;
@@ -349,7 +355,7 @@ public class FilmDbRepository implements FilmStorage {
                 "WHERE F.FILM_ID IN (" +
                 "SELECT FILM_ID " +
                 "FROM FILM_GENRES " +
-                "WHERE GENRE_ID = :genreid) " +
+                "WHERE GENRE_ID = :genreId) " +
                 "GROUP BY F.FILM_ID " +
 //                "ORDER BY COUNT(L.USER_ID) " +
                 "ORDER BY RT DESC " +
@@ -362,7 +368,10 @@ public class FilmDbRepository implements FilmStorage {
 //        List<Film> filmList = jdbcOperations.query(sql, Map.of("genreId", genreId, "count", count),
 //                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
-        List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("genreId", genreId, "count", count), new FilmRowMapper()));
+        MapSqlParameterSource map = new MapSqlParameterSource();
+        map.addValue("genreId", genreId);
+        map.addValue("count", count);
+        List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, map, new FilmRowMapper()));
 
         log.info("Поиск ТОП {} фильмов в жанре c ID {} дал {} резльтатов", count, genreId, filmList.size());
         return filmList;
@@ -537,9 +546,9 @@ public class FilmDbRepository implements FilmStorage {
         Map<Long, Set<User>> filmLikesMap = getFilmsLikesMapByFilmsIds(filmsIds);
 
         filmList.forEach(film -> {
-            film.setGenres(filmsGenresMap.get(film.getId()));
-            film.setDirectors(filmsDirectorsMap.get(film.getId()));
-            film.setLikes(filmLikesMap.get(film.getId()));
+            film.setGenres(filmsGenresMap.getOrDefault(film.getId(), Collections.emptySet()));
+            film.setDirectors(filmsDirectorsMap.getOrDefault(film.getId(), Collections.emptySet()));
+            film.setLikes(filmLikesMap.getOrDefault(film.getId(), Collections.emptySet()));
         });
         return filmList;
     }
@@ -571,10 +580,10 @@ public class FilmDbRepository implements FilmStorage {
 
     private Map<Long, Set<Genre>> getFilmsGenresMapByFilmsIds(List<Long> filmsIds) {
 
-        String sql = "SELECT FILM_ID, F.GENRE_ID AS GENRE_ID, G.NAME AS NAME " +
+        String sql = "SELECT F.FILM_ID, F.GENRE_ID AS GENRE_ID, G.NAME AS NAME " +
                 "FROM FILM_GENRES F " +
-                "LEFT JOIN GENRES G ON f.GENRE_ID = G.GENRE_ID " +
-                "WHERE FILM_ID IN :filmsIds " +
+                "LEFT JOIN GENRES G ON F.GENRE_ID = G.GENRE_ID " +
+                "WHERE F.FILM_ID IN (:filmsIds) " +
                 "ORDER BY GENRE_ID";
 
         SqlRowSet rows = jdbcOperations.queryForRowSet(sql, Map.of("filmsIds", filmsIds));
@@ -625,7 +634,7 @@ public class FilmDbRepository implements FilmStorage {
         String sql = "SELECT FILM_ID, F.DIRECTOR_ID AS DIRECTOR_ID, D.NAME AS NAME " +
                 "FROM FILM_DIRECTORS F " +
                 "LEFT JOIN DIRECTORS D ON F.DIRECTOR_ID = D.DIRECTOR_ID " +
-                "WHERE FILM_ID IN :filmsIds " +
+                "WHERE FILM_ID IN (:filmsIds) " +
                 "ORDER BY FILM_ID, DIRECTOR_ID";
 
         SqlRowSet rows = jdbcOperations.queryForRowSet(sql, Map.of("filmsIds", filmsIds));
@@ -678,7 +687,7 @@ public class FilmDbRepository implements FilmStorage {
         String sql = "SELECT L.FILM_ID, U.* " +
                 "FROM LIKES L " +
                 "JOIN USERS U ON L.USER_ID = U.USER_ID " +
-                "WHERE L.FILM_ID IN :filmsIds";
+                "WHERE L.FILM_ID IN (:filmsIds) ";
         // проверить, что будет, если аргумент будет равен null - вернет ли полный список, не по условию.
 
         SqlRowSet rows = jdbcOperations.queryForRowSet(sql, Map.of("filmsIds", filmsIds));
