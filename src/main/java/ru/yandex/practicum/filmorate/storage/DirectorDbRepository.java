@@ -81,7 +81,7 @@ public class DirectorDbRepository implements DirectorStorage {
 
     @Override
     public void deleteDirector(int directorId) {
-        String sql = "DELETE FROM FILM_DIRECTORS WHERE DIRECTOR_ID = :directorId"; //TODO заменить на delete on cascade
+        String sql = "DELETE FROM FILM_DIRECTORS WHERE DIRECTOR_ID = :directorId";
         jdbcTemplate.update(sql, Map.of("directorId", directorId));
         sql = "DELETE FROM DIRECTORS WHERE DIRECTOR_ID = :directorId";
         jdbcTemplate.update(sql, Map.of("directorId", directorId));

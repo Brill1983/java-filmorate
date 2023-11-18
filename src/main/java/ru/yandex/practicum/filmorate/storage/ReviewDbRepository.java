@@ -50,7 +50,7 @@ public class ReviewDbRepository implements ReviewStorage {
 
         jdbcOperations.update(sql, map);
         log.info("Обновлен отзыв с идентификатором {}", review.getReviewId());
-        return getReviewById(review.getReviewId()).get(); //TODO переделать под проверку на наличие через count
+        return getReviewById(review.getReviewId()).get();
     }
 
     @Override
@@ -103,7 +103,7 @@ public class ReviewDbRepository implements ReviewStorage {
     @Override
     public void addLike(long reviewId, long userId) {
         Boolean isLike = true;
-        String sqlReviewUserLikes = "SELECT * " + // запрашиваем лайки от пользователя для отзыва
+        String sqlReviewUserLikes = "SELECT * " +
                 "FROM REVIEWS_LIKES " +
                 "WHERE REVIEW_ID = :reviewId AND USER_ID = :userId ";
         MapSqlParameterSource map = new MapSqlParameterSource();
@@ -137,7 +137,7 @@ public class ReviewDbRepository implements ReviewStorage {
     }
 
     @Override
-    public void addDislike(long reviewId, long userId) { // TODO можно ли слить в один метод с лайками
+    public void addDislike(long reviewId, long userId) {
         Boolean isLike = false;
         String sqlReviewUserLikes = "SELECT * " +
                 "FROM REVIEWS_LIKES " +

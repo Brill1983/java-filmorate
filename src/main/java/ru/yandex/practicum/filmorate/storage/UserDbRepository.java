@@ -17,7 +17,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class UserDbRepository implements UserStorage { // TODO везде обавить логирование
+public class UserDbRepository implements UserStorage {
 
     private final NamedParameterJdbcOperations jdbcOperations;
 

@@ -17,6 +17,6 @@ public class EventRowMapper implements RowMapper<Event> {
                 EventType.valueOf(rs.getString("EVENT_TYPE")),
                 rs.getLong("ENTITY_ID"),
                 Operation.valueOf(rs.getString("OPERATION")),
-                rs.getTimestamp("TIMESTAMP").toLocalDateTime());
+                rs.getLong("TIMESTAMP"));
     }
 }

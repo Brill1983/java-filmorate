@@ -50,7 +50,7 @@ public class MpaCategoryDbRepository implements MpaCategoryStorage {
         String sql = "SELECT CATEGORY_MPA_ID FROM MPA_CATEGORIES";
         SqlRowSet rows = jdbcTemplate.getJdbcOperations().queryForRowSet(sql);
         List<Integer> mpaIdList = new ArrayList<>();
-        while(rows.next()) {
+        while (rows.next()) {
             mpaIdList.add(rows.getInt("CATEGORY_MPA_ID"));
         }
         log.info("Найдено {} ID категорий МПА", mpaIdList.size());

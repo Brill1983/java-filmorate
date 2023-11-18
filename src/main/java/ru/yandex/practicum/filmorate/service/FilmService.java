@@ -52,6 +52,8 @@ public class FilmService {
         validationService.validFilmId(filmId);
         if (likesRepository.checkUserLikedFilm(filmId, userId)) {
             log.info("У фильма с ID {} уже есть лайк от пользователя {}", filmId, userId);
+            throw new IncorrectParameterException("У фильма " + filmId + " уже есть лайк от пользователя " + userId +
+                    "два раза лайкать нельзя");
         } else {
             likesRepository.userLikedFilm(filmId, userId);
             eventRepository.add(new Event(userId, EventType.LIKE, filmId, Operation.ADD));
@@ -68,7 +70,7 @@ public class FilmService {
             eventRepository.add(new Event(userId, EventType.LIKE, filmId, Operation.REMOVE));
         } else {
             log.info("У фильма с ID {} нет лайка от пользователя {}, удалять нечего", filmId, userId);
-            throw new ObjectNotFoundException("У фильма " + filmId + " нет лайка от пользователя " + userId +
+            throw new IncorrectParameterException("У фильма " + filmId + " нет лайка от пользователя " + userId +
                     ", удалять нечего");
         }
     }

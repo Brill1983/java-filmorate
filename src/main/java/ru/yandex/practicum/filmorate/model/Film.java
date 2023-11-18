@@ -34,8 +34,6 @@ public class Film {
     @Positive(groups = {Create.class, Update.class}, message = "Продолжительность не может быть 0 или отрицательной")
     private int duration;
 
-    private int rate;
-
     private MpaCategory mpa;
 
     private Set<Director> directors = new HashSet<>();

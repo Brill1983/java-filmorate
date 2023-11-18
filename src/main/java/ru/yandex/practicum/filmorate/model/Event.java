@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -27,7 +29,7 @@ public class Event {
     @NotNull
     private Operation operation;
 
-    LocalDateTime timestamp = LocalDateTime.now();
+    private Long timestamp = Instant.now().toEpochMilli();
 
     public Event(Long userId, EventType eventType, Long entityId, Operation operation) {
         this.userId = userId;

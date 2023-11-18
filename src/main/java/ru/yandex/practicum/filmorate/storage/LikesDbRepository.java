@@ -39,11 +39,7 @@ public class LikesDbRepository implements LikesStorage {
         String sql = "SELECT USER_ID FROM LIKES WHERE FILM_ID = :filmId AND USER_ID = :userId";
         List<Long> likesList = jdbcTemplate.query(sql, Map.of("filmId", filmId, "userId", userId), (rs, rowNum) -> makeId(rs));
         log.info("Для фильма {} найдено {} лайков", filmId, likesList.size());
-        if (likesList.isEmpty()) {
-            return false;
-        } else {
-            return true;
-        }
+        return !likesList.isEmpty();
     }
 
     @Override
@@ -51,9 +47,9 @@ public class LikesDbRepository implements LikesStorage {
         final String sqlQuery = "SELECT * " + //TODO переделать запрос - без подзапросов
                 "FROM USERS " +
                 "WHERE USER_ID in (" +
-                    "SELECT USER_ID " +
-                    "FROM LIKES " +
-                    "WHERE FILM_ID = :filmId) " +
+                "SELECT USER_ID " +
+                "FROM LIKES " +
+                "WHERE FILM_ID = :filmId) " +
                 "ORDER BY USER_ID";
         List<User> likesList = jdbcTemplate.query(sqlQuery, Map.of("filmId", filmId), new UserRowMapper());
         log.info("Для фильма {} найдено {} лайков", filmId, likesList.size());
@@ -64,5 +60,4 @@ public class LikesDbRepository implements LikesStorage {
         Long id = rs.getLong("USER_ID");
         return id;
     }
-
 }

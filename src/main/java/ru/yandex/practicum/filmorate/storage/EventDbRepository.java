@@ -17,7 +17,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class EventDbRepository implements EventStorage { // TODO везде обавить логирование
+public class EventDbRepository implements EventStorage {
 
     private final NamedParameterJdbcOperations jdbcOperations;
 
@@ -43,7 +43,7 @@ public class EventDbRepository implements EventStorage { // TODO везде об
     }
 
     @Override
-    public Event add(Event event) { // TODO проверить можно ли заменить возврат на boolean
+    public Event add(Event event) {
         String sqlQuery = "INSERT INTO EVENTS(USER_ID, EVENT_TYPE, ENTITY_ID, OPERATION, TIMESTAMP) " +
                 "VALUES (:userId, :eventType, :entityId, :operation, :timestamp) ";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -74,14 +74,4 @@ public class EventDbRepository implements EventStorage { // TODO везде об
         log.info("Изменено событие с ID {}", event.getEventId());
         return getEventById(event.getEventId()).get();
     }
-
-    //TODO clean after checking
-//    @Override
-//    public void delete(long eventId) {
-//        String sql = "DELETE FROM EVENTS WHERE EVENT_ID = :eventId";
-//        int count = jdbcOperations.update(sql, Map.of("eventId", eventId));
-//        if (count > 0) {
-//            log.info("Удалено событие с ID {}", eventId);
-//        }
-//    }
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
@@ -11,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -50,30 +50,29 @@ public class UserService {
         return userRepository.delete(userId);
     }
 
-    public boolean addAsFriend(long userId, long friendId) {
+    public void addAsFriend(long userId, long friendId) {
+        if (userId == friendId) {
+            throw new IncorrectParameterException("Пользователь не может добавить себя в друзья.");
+        }
         validationService.validUserId(userId);
         validationService.validUserId(friendId);
-        List<Long> friendsIdList = friendsRepository.getFriendsList(userId)
-                .stream()
-                .map(User::getId)
-                .collect(Collectors.toList());
-        if (!friendsIdList.contains(friendId)) {
-            friendsRepository.addAsFriend(userId, friendId);
-            eventRepository.add(new Event(userId, EventType.FRIEND, friendId, Operation.ADD));
-            return true;
+        if (friendsRepository.friendshipCheck(userId, friendId)) {
+            log.info("Пользователь с ID {} уже есть друг c ID {}", userId, friendId);
+            throw new IncorrectParameterException("Такой запрос дружбы уже существует.");
         }
-        log.info("Пользователь с ID {} уже есть друг c ID {}", userId, friendId);
-        return false;
+        friendsRepository.addAsFriend(userId, friendId);
+        eventRepository.add(new Event(userId, EventType.FRIEND, friendId, Operation.ADD));
     }
 
-    public boolean deleteFriend(long userId, long friendId) {
+    public void deleteFriend(long userId, long friendId) {
         validationService.validUserId(userId);
         validationService.validUserId(friendId);
-        boolean isDelete = friendsRepository.deleteFriend(userId, friendId);
-        if (isDelete) {
-            eventRepository.add(new Event(userId, EventType.FRIEND, friendId, Operation.REMOVE));
+        if (!friendsRepository.friendshipCheck(userId, friendId)) {
+            log.info("Пользователь {} не имеет в друзьях пользователя {}", userId, friendId);
+            throw new IncorrectParameterException("Такой запрос дружбы не существует.");
         }
-        return isDelete;
+        friendsRepository.deleteFriend(userId, friendId);
+        eventRepository.add(new Event(userId, EventType.FRIEND, friendId, Operation.REMOVE));
     }
 
     public List<User> getFriendsList(long userId) {

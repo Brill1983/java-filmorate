@@ -29,7 +29,7 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public Optional<Film> getFilmById(long filmId) {
 
-        String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.RATE AS RT, " +
+        String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, " +
                 "F.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
@@ -52,8 +52,7 @@ public class FilmDbRepository implements FilmStorage {
 
     @Override
     public List<Film> getFilmsList() {
-        String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, " +
-                "F.DESCRIPTION, F.DURATION, F.RATE AS RT, F.CATEGORY_MPA_ID, M.NAME " +
+        String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID";
 
@@ -68,8 +67,8 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
 
-        String sql = "INSERT INTO FILMS (NAME, RELEASE_DATE, DESCRIPTION, CATEGORY_MPA_ID, DURATION, RATE) " +
-                "VALUES (:name, :releaseDate, :description, :categoryMpaId, :duration, :rate)";
+        String sql = "INSERT INTO FILMS (NAME, RELEASE_DATE, DESCRIPTION, CATEGORY_MPA_ID, DURATION) " +
+                "VALUES (:name, :releaseDate, :description, :categoryMpaId, :duration)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("name", film.getName());
@@ -77,7 +76,6 @@ public class FilmDbRepository implements FilmStorage {
         map.addValue("description", film.getDescription());
         map.addValue("categoryMpaId", film.getMpa().getId());
         map.addValue("duration", film.getDuration());
-        map.addValue("rate", film.getRate());
         jdbcOperations.update(sql, map, keyHolder);
         film.setId(keyHolder.getKey().longValue());
         film.getGenres()
@@ -95,7 +93,6 @@ public class FilmDbRepository implements FilmStorage {
         jdbcOperations.update(sql, Map.of("filmId", filmId));
         sql = "DELETE FROM LIKES WHERE FILM_ID = :filmId";
         jdbcOperations.update(sql, Map.of("filmId", filmId));
-        //TODO добавить удаление ревью
         sql = "DELETE FROM FILM_DIRECTORS WHERE FILM_ID = :filmId";
         jdbcOperations.update(sql, Map.of("filmId", filmId));
         sql = "DELETE FROM REVIEWS WHERE FILM_ID = :filmId";
@@ -109,7 +106,7 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
         String sql = "UPDATE FILMS SET NAME = :name, RELEASE_DATE = :releaseDate, DESCRIPTION = :description, " +
-                "CATEGORY_MPA_ID = :categoryMpaId, DURATION = :duration, RATE = :rate " +
+                "CATEGORY_MPA_ID = :categoryMpaId, DURATION = :duration " +
                 "WHERE FILM_ID = :id";
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("id", film.getId());
@@ -118,7 +115,6 @@ public class FilmDbRepository implements FilmStorage {
         map.addValue("description", film.getDescription());
         map.addValue("categoryMpaId", film.getMpa().getId());
         map.addValue("duration", film.getDuration());
-        map.addValue("rate", film.getRate());
 
         jdbcOperations.update(sql, map);
         deleteGenresOfFilm(film.getId());
@@ -153,13 +149,6 @@ public class FilmDbRepository implements FilmStorage {
                 "WHERE D.DIRECTOR_ID = :directorId " +
                 "ORDER BY RELEASE_DATE";
 
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("directorId", directorId), (rs, rowNum) ->
-//                makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
-
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("directorId", directorId), new FilmRowMapper()));
 
         log.info("Для режиссера {} найдено {} фильмов отсортированных по году выпуска", directorId, filmList.size());
@@ -169,21 +158,14 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public List<Film> getDirectorFilmListByLikes(int directorId) {
 
-        final String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATE, M.CATEGORY_MPA_ID, M.NAME " +
+        final String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "JOIN FILM_DIRECTORS FD ON F.FILM_ID = FD.FILM_ID " +
                 "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
                 "WHERE FD.DIRECTOR_ID = :directorId " +
                 "GROUP BY F.FILM_ID " +
-                "ORDER BY COUNT(L.USER_ID) + F.RATE DESC";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("directorId", directorId), (rs, rowNum) ->
-//                makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
+                "ORDER BY COUNT(L.USER_ID) DESC";
 
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("directorId", directorId), new FilmRowMapper()));
 
@@ -194,7 +176,7 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public List<Film> searchFilmsByDirAndName(String query) {
         String regex = "%" + query + "%";
-        String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATE, M.CATEGORY_MPA_ID, M.NAME " +
+        String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
@@ -207,13 +189,6 @@ public class FilmDbRepository implements FilmStorage {
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.USER_ID) DESC";
 
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("regex", regex), (rs, rowNum) ->
-//                makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
-
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("regex", regex), new FilmRowMapper()));
 
         log.info("Поиск по именам режиссеров и названиям дал {} резльтатов", filmList.size());
@@ -223,20 +198,13 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public List<Film> searchFilmsByName(String query) {
         String regex = "%" + query + "%";
-        String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATE, M.CATEGORY_MPA_ID, M.NAME " +
+        String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "LEFT JOIN LIKES AS L ON F.FILM_ID = L.FILM_ID " +
                 "WHERE UPPER(F.NAME) LIKE UPPER(:regex) " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.USER_ID) DESC";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("regex", regex), (rs, rowNum) ->
-//                makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("regex", regex), new FilmRowMapper()));
 
@@ -247,7 +215,7 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public List<Film> searchFilmsByDir(String query) {
         String regex = "%" + query + "%";
-        String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATE, M.CATEGORY_MPA_ID, M.NAME " +
+        String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
@@ -260,13 +228,6 @@ public class FilmDbRepository implements FilmStorage {
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(L.USER_ID) DESC";
 
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("regex", regex), (rs, rowNum) ->
-//                makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
-
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("regex", regex), new FilmRowMapper()));
 
         log.info("Поиск по именам режиссеров дал {} резльтатов", filmList.size());
@@ -275,9 +236,8 @@ public class FilmDbRepository implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilmsByYearAndGenre(int genreId, int year, int count) {
-        String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.RATE, M.CATEGORY_MPA_ID, M.NAME, " +
-//                "COUNT(L.USER_ID) " +
-                "COUNT(L.USER_ID) + F.RATE AS RT " +
+        String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, M.CATEGORY_MPA_ID, M.NAME, " +
+                "COUNT(L.USER_ID) AS RT " +
                 "FROM FILMS as F " +
                 "JOIN MPA_CATEGORIES as M on F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
@@ -287,16 +247,8 @@ public class FilmDbRepository implements FilmStorage {
                 "WHERE GENRE_ID = :genreId) " +
                 "AND EXTRACT(YEAR FROM F.RELEASE_DATE) = :year " +
                 "GROUP BY F.FILM_ID " +
-//                "order by COUNT(L.USER_ID) " +
                 "ORDER BY RT DESC " +
                 "LIMIT :count";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("genreId", genreId, "year", year, "count", count),
-//                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("genreId", genreId);
@@ -310,30 +262,15 @@ public class FilmDbRepository implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilmsByYear(int year, int count) {
-        final String sql = "SELECT F.FILM_ID, " +
-                "F.NAME, " +
-                "F.RELEASE_DATE, " +
-                "F.DESCRIPTION, " +
-                "F.DURATION, F.RATE, " +
-                "M.CATEGORY_MPA_ID, " +
-                "M.NAME, " +
-//                "COUNT(L.USER_ID) " +
-                "COUNT(L.USER_ID) + F.RATE AS RT " +
+        final String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, M.CATEGORY_MPA_ID, M.NAME, " +
+                "COUNT(L.USER_ID) AS RT " +
                 "from FILMS as F " +
                 "join MPA_CATEGORIES as M on F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "left join LIKES L on F.FILM_ID = L.FILM_ID " +
                 "where extract(YEAR from F.RELEASE_DATE) = :year " +
                 "group by F.FILM_ID " +
-//                "order by COUNT(L.USER_ID) " +
                 "ORDER BY RT DESC " +
                 "limit :count";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("year", year, "count", count),
-//                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("year", year);
@@ -346,9 +283,8 @@ public class FilmDbRepository implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilmsByGenre(int genreId, int count) {
-        final String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.RATE, M.CATEGORY_MPA_ID, M.NAME, " +
-//                "COUNT(L.USER_ID) " +
-                "COUNT(L.USER_ID) + F.RATE AS RT " +
+        final String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, M.CATEGORY_MPA_ID, M.NAME, " +
+                "COUNT(L.USER_ID) AS RT " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
@@ -357,16 +293,8 @@ public class FilmDbRepository implements FilmStorage {
                 "FROM FILM_GENRES " +
                 "WHERE GENRE_ID = :genreId) " +
                 "GROUP BY F.FILM_ID " +
-//                "ORDER BY COUNT(L.USER_ID) " +
                 "ORDER BY RT DESC " +
                 "LIMIT :count";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("genreId", genreId, "count", count),
-//                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("genreId", genreId);
@@ -380,21 +308,14 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public List<Film> getMostPopularFilms(int count) {
 
-        final String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.RATE, " +
-                "M.CATEGORY_MPA_ID, M.NAME, COUNT(L.USER_ID) + F.RATE AS RT " +
+        final String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, " +
+                "M.CATEGORY_MPA_ID, M.NAME, COUNT(L.USER_ID) AS RT " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
                 "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY RT DESC " +
                 "LIMIT :count";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("count", count),
-//                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("count", count), new FilmRowMapper()));
 
@@ -405,7 +326,7 @@ public class FilmDbRepository implements FilmStorage {
     @Override
     public List<Film> findCommonFilms(int userId, int friendId) {
 
-        final String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, RATE, M.CATEGORY_MPA_ID, M.NAME " +
+        final String sql = "SELECT F.FILM_ID, F.NAME, DESCRIPTION, RELEASE_DATE, DURATION, M.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID=M.CATEGORY_MPA_ID " +
                 "JOIN LIKES L ON F.film_id = L.film_id " +
@@ -415,13 +336,6 @@ public class FilmDbRepository implements FilmStorage {
                 "JOIN LIKES LI ON FL.film_id = LI.film_id " +
                 "WHERE LI.user_id = :friendId" +
                 ")";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("userId", userId, "friendId", friendId),
-//                (rs, rowNum) -> makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("userId", userId, "friendId", friendId), new FilmRowMapper()));
 
@@ -435,7 +349,7 @@ public class FilmDbRepository implements FilmStorage {
      */
     @Override
     public boolean checkFilmById(long filmId) {
-        String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, F.RATE AS RT, " +
+        String sql = "SELECT F.FILM_ID, F.NAME AS FILM_NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, " +
                 "F.CATEGORY_MPA_ID, M.NAME " +
                 "FROM FILMS AS F " +
                 "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
@@ -475,13 +389,6 @@ public class FilmDbRepository implements FilmStorage {
                 "WHERE USER_ID = :userId" +
                 ") " +
                 "ORDER BY F.FILM_ID";
-
-//        Map<Long, Set<Genre>> filmsGenresMap = getFilmsGenresMap();
-//        Map<Long, Set<Director>> filmsDirectorsMap = getFilmsDirectorsMap();
-//        Map<Long, Set<User>> filmLikesMap = getFilmsLikesMap();
-//
-//        List<Film> filmList = jdbcOperations.query(sql, Map.of("userId", userId), (rs, rowNum) ->
-//                makeFilm(rs, filmsGenresMap, filmsDirectorsMap, filmLikesMap));
 
         List<Film> filmList = makeFilmsList(jdbcOperations.query(sql, Map.of("userId", userId), new FilmRowMapper()));
 
@@ -528,7 +435,6 @@ public class FilmDbRepository implements FilmStorage {
                 .description(rs.getString("DESCRIPTION"))
                 .releaseDate(rs.getDate("RELEASE_DATE").toLocalDate())
                 .duration(rs.getInt("DURATION"))
-                .rate(rs.getInt("RATE"))
                 .mpa(new MpaCategory(rs.getInt("CATEGORY_MPA_ID"), rs.getString("MPA_CATEGORIES.NAME")))
                 .genres(filmGenres)
                 .directors(filmDirectors)
@@ -659,7 +565,6 @@ public class FilmDbRepository implements FilmStorage {
         String sql = "SELECT L.FILM_ID, U.* " +
                 "FROM LIKES L " +
                 "JOIN USERS U ON L.USER_ID = U.USER_ID";
-        // проверить, что будет, если аргумент будет равен null - вернет ли полный список, не по условию.
 
         SqlRowSet rows = jdbcOperations.getJdbcOperations().queryForRowSet(sql);
         Map<Long, Set<User>> filmLikesMap = new HashMap<>();
@@ -688,7 +593,6 @@ public class FilmDbRepository implements FilmStorage {
                 "FROM LIKES L " +
                 "JOIN USERS U ON L.USER_ID = U.USER_ID " +
                 "WHERE L.FILM_ID IN (:filmsIds) ";
-        // проверить, что будет, если аргумент будет равен null - вернет ли полный список, не по условию.
 
         SqlRowSet rows = jdbcOperations.queryForRowSet(sql, Map.of("filmsIds", filmsIds));
         Map<Long, Set<User>> filmLikesMap = new HashMap<>();

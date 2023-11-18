@@ -12,15 +12,7 @@ public interface GenreStorage {
 
     Optional<Genre> findGenreById(int id);
 
-//    List<Genre> findGenresByFilmId(long id);
-
     Genre createNewGenre(Genre genre);
 
     List<Integer> findAllGenresIds();
-
-//    boolean deleteGenresOfFilm(long id);
-//
-//    void addGenresForFilm(Integer genreId, Long filmId);
-
-//    Map<Genre, List<Long>> getFilmsGenresMap();
 }

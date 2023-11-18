@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
@@ -32,16 +31,8 @@ public class ReviewService {
     public Review updateReview(Review review) {
         Review reviewFromDb = getReviewById(review.getReviewId());
         validationService.validUserId(review.getUserId());
-        validationService.validFilmId(review.getFilmId()); // TODO clean
-//        if (!reviewFromDb.getUserId().equals(review.getUserId())) {
-//            throw new IncorrectRequestBodyException("Отзыв с ID " + review.getReviewId() + ", написан пользователем с ID " +
-//                    reviewFromDb.getUserId() + ", пользователь с ID " + review.getUserId() + "не имеет права исправлять чужой отзыв");
-//        }
-//        if (!reviewFromDb.getFilmId().equals(review.getFilmId())) {
-//            throw new IncorrectRequestBodyException("Отзыв с ID " + review.getReviewId() + ", написан к фильму с ID " +
-//                    reviewFromDb.getFilmId() + ", а не к фильму с ID " + review.getFilmId());
-//        }
-        eventRepository.add(new Event(review.getUserId(), EventType.REVIEW, review.getReviewId(), Operation.UPDATE));
+        validationService.validFilmId(review.getFilmId());
+        eventRepository.add(new Event(reviewFromDb.getUserId(), EventType.REVIEW, reviewFromDb.getReviewId(), Operation.UPDATE));
         return reviewRepository.updateReview(review);
     }
 

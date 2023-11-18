@@ -25,7 +25,7 @@ public class MpaCategoryService {
                 new ObjectNotFoundException("Категории с ID " + id + " нет в базе"));
     }
 
-    public MpaCategory makeMpaCategory(MpaCategory mpaCategory) { // не нужен
+    public MpaCategory makeMpaCategory(MpaCategory mpaCategory) {
         if (StringUtils.isBlank(mpaCategory.getName())) {
             throw new IncorrectRequestBodyException("Название категории MPA обзятельно для заполнения");
         }
