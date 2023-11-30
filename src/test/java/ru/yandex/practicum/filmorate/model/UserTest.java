@@ -1,57 +1,59 @@
 package ru.yandex.practicum.filmorate.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controller.UserController;
-
-import static org.junit.jupiter.api.Assertions.*;
+import ru.yandex.practicum.filmorate.validator.Create;
+import ru.yandex.practicum.filmorate.validator.Update;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-class UserTest { //TODO - доделать
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//    private UserController userController;
-//    @BeforeEach
-//    void setUp() {
-//        userController = new UserController();
-//    }
+class UserTest {
 
-    private static Validator validator;
+    private static final Validator validator;
+
     static {
         ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.usingContext().getValidator();
     }
 
     @Test
-    void validateName() { // TODO - проверить и исправить
+    void validateEmailIsNullAndLoginHasWhitespace() {
         User user = new User();
         user.setLogin("Log in");
 
-        Set<ConstraintViolation<User>> voilations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, Create.class, Update.class);
 
-        for (ConstraintViolation<User> voilation : voilations) {
-            System.out.println("getMessage");
-            System.out.println(voilation.getMessage());
-            System.out.println("getConstraintDescriptor");
-            System.out.println(voilation.getConstraintDescriptor());
-            System.out.println("getInvalidValue");
-            System.out.println(voilation.getInvalidValue());
-            System.out.println("getRootBeanClass");
-            System.out.println(voilation.getRootBeanClass());
-            System.out.println("getRootBean");
-            System.out.println(voilation.getRootBean());
-            System.out.println("getExecutableParameters");
-            System.out.println(voilation.getExecutableParameters());
-        }
-        List<ConstraintViolation<User>> viol = new ArrayList<>(voilations);
+        List<String> viol = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.toList());
 
-        assertEquals("В логине не должно быть пробелов", viol.get(0).getMessage(), "Login is empty");
+        assertTrue(viol.contains("Передан пустой email") &&
+                viol.contains("В логине не должно быть пробелов"));
     }
 
+    @Test
+    void validateEmailHasSpellingErrorAndLoginIsNullAndBirthdayIsInFuture() {
+        User user = new User();
+        user.setEmail("useremail.com");
+        user.setBirthday(LocalDate.now().plusMonths(1));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user, Create.class, Update.class);
+
+        List<String> viol = violations.stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.toList());
+
+        assertTrue(viol.contains("Передан пустой логин") &&
+                viol.contains("День рождения не может быть в будущем.") &&
+                viol.contains("Передан неправильный формат email"));
+
+    }
 }

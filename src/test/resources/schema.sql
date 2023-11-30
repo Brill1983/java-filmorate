@@ -14,6 +14,13 @@ create table if not exists MPA_CATEGORIES
         primary key (CATEGORY_MPA_ID)
 );
 
+CREATE TABLE IF NOT EXISTS DIRECTORS
+(
+    DIRECTOR_ID INT PRIMARY KEY AUTO_INCREMENT,
+    NAME        CHARACTER VARYING NOT NULL,
+    CONSTRAINT "DIRECTORS_PK" PRIMARY KEY (DIRECTOR_ID)
+);
+
 create table if not exists FILMS
 (
     FILM_ID         INTEGER auto_increment,
@@ -37,6 +44,16 @@ create table if not exists FILM_GENRES
         foreign key (FILM_ID) references FILMS,
     constraint "FILM_GENRES_GENRES_GENRE_ID_fk"
         foreign key (GENRE_ID) references GENRES
+);
+
+CREATE TABLE IF NOT EXISTS FILM_DIRECTORS
+(
+    FILM_ID     INT NOT NULL,
+    DIRECTOR_ID INT NOT NULL,
+    CONSTRAINT FILM_DIRECTORS_DIRECTORS_DIRECTOR_ID_FK
+        FOREIGN KEY (DIRECTOR_ID) REFERENCES DIRECTORS,
+    CONSTRAINT "FILM_DIRECTORS_FILMS_FILM_ID_FK"
+        FOREIGN KEY (FILM_ID) REFERENCES FILMS
 );
 
 create table if not exists USERS
