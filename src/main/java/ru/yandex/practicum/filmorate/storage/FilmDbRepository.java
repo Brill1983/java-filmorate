@@ -87,7 +87,7 @@ public class FilmDbRepository implements FilmStorage {
     }
 
     @Override
-    public boolean delete(long filmId) { //TODO попробовать delete on cascade, дописать удаление отзыва.
+    public boolean delete(long filmId) {
 
         String sql = "DELETE FROM FILM_GENRES WHERE FILM_ID = :filmId";
         jdbcOperations.update(sql, Map.of("filmId", filmId));
@@ -264,13 +264,13 @@ public class FilmDbRepository implements FilmStorage {
     public List<Film> getMostPopularFilmsByYear(int year, int count) {
         final String sql = "SELECT F.FILM_ID, F.NAME, F.RELEASE_DATE, F.DESCRIPTION, F.DURATION, M.CATEGORY_MPA_ID, M.NAME, " +
                 "COUNT(L.USER_ID) AS RT " +
-                "from FILMS as F " +
-                "join MPA_CATEGORIES as M on F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
-                "left join LIKES L on F.FILM_ID = L.FILM_ID " +
-                "where extract(YEAR from F.RELEASE_DATE) = :year " +
-                "group by F.FILM_ID " +
+                "FROM FILMS AS F " +
+                "JOIN MPA_CATEGORIES AS M ON F.CATEGORY_MPA_ID = M.CATEGORY_MPA_ID " +
+                "LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID " +
+                "WHERE EXTRACT(YEAR FROM F.RELEASE_DATE) = :year " +
+                "GROUP BY F.FILM_ID " +
                 "ORDER BY RT DESC " +
-                "limit :count";
+                "LIMIT :count";
 
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("year", year);

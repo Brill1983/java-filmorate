@@ -44,9 +44,9 @@ public class LikesDbRepository implements LikesStorage {
 
     @Override
     public List<User> getFilmLikes(long filmId) {
-        final String sqlQuery = "SELECT * " + //TODO переделать запрос - без подзапросов
+        final String sqlQuery = "SELECT * " +
                 "FROM USERS " +
-                "WHERE USER_ID in (" +
+                "WHERE USER_ID IN (" +
                 "SELECT USER_ID " +
                 "FROM LIKES " +
                 "WHERE FILM_ID = :filmId) " +
@@ -57,7 +57,6 @@ public class LikesDbRepository implements LikesStorage {
     }
 
     private Long makeId(ResultSet rs) throws SQLException {
-        Long id = rs.getLong("USER_ID");
-        return id;
+        return rs.getLong("USER_ID");
     }
 }
