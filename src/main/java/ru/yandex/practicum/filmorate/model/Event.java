@@ -3,9 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
