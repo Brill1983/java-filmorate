@@ -13,6 +13,6 @@ public class ReleaseDateValidator implements ConstraintValidator<ReleaseDateCons
         if (value == null) {
             return true;
         }
-        return value.isAfter(FIRST_FILM_DATE);
+        return (value.isAfter(FIRST_FILM_DATE) || value.isEqual(FIRST_FILM_DATE));
     }
 }

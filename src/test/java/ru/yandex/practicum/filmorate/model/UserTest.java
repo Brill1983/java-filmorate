@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserTest {
@@ -25,11 +26,30 @@ class UserTest {
     }
 
     @Test
+    void shouldCreateCorrectUser() {
+        User user = new User();
+        user.setLogin("login");
+        user.setName("name");
+        user.setEmail("email@mail.ru");
+        user.setBirthday(LocalDate.of(1990, 1, 12));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertTrue(violations.isEmpty(), "Присутствуют нарушения валидации при создании объекта.");
+        assertEquals(user.getLogin(), "login", "Логин был присвоен некорректно.");
+        assertEquals(user.getName(), "name", "Имя было присвоено некорректно.");
+        assertEquals(user.getBirthday(), LocalDate.of(1990, 1, 12),
+                "Дата рождения была присвоена некорректно.");
+    }
+
+
+    @Test
     void validateEmailIsNullAndLoginHasWhitespace() {
         User user = new User();
         user.setLogin("Log in");
 
         Set<ConstraintViolation<User>> violations = validator.validate(user, Create.class, Update.class);
+
+        ConstraintViolation<User> violation = violations.iterator().next();
 
         List<String> viol = violations.stream()
                 .map(ConstraintViolation::getMessage)
