@@ -6,11 +6,13 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,13 +20,13 @@ import java.util.Optional;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class MpaCategoryDbStorage implements MpaCategoryStorage {
+public class MpaCategoryDbRepository implements MpaCategoryStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 
     @Override
     public List<MpaCategory> findAllMpaCategories() {
-        String sql = "select * from MPA_CATEGORIES";
+        String sql = "SELECT * FROM MPA_CATEGORIES";
         List<MpaCategory> mpaCategoryList = jdbcTemplate.query(sql, (rs, rowNum) -> makeMpaCategory(rs));
         log.info("Найдено {} категорий", mpaCategoryList.size());
         return mpaCategoryList;
@@ -32,7 +34,7 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage {
 
     @Override
     public Optional<MpaCategory> findMpaCategoryById(int id) {
-        String sql = "select * from MPA_CATEGORIES where CATEGORY_MPA_ID = :id";
+        String sql = "SELECT * FROM MPA_CATEGORIES WHERE CATEGORY_MPA_ID = :id";
         List<MpaCategory> mpaCategoryList = jdbcTemplate.query(sql, Map.of("id", id), (rs, rowNum) -> makeMpaCategory(rs));
         if (!mpaCategoryList.isEmpty()) {
             log.info("Найдена категория MPA с ID: {} и названием {} ", mpaCategoryList.get(0).getId(), mpaCategoryList.get(0).getName());
@@ -44,8 +46,20 @@ public class MpaCategoryDbStorage implements MpaCategoryStorage {
     }
 
     @Override
+    public List<Integer> findAllMpaIds() {
+        String sql = "SELECT CATEGORY_MPA_ID FROM MPA_CATEGORIES";
+        SqlRowSet rows = jdbcTemplate.getJdbcOperations().queryForRowSet(sql);
+        List<Integer> mpaIdList = new ArrayList<>();
+        while (rows.next()) {
+            mpaIdList.add(rows.getInt("CATEGORY_MPA_ID"));
+        }
+        log.info("Найдено {} ID категорий МПА", mpaIdList.size());
+        return mpaIdList;
+    }
+
+    @Override
     public MpaCategory createNewMpaCategory(MpaCategory mpaCategory) {
-        String sql = "insert into MPA_CATEGORIES (NAME) VALUES (:name)";
+        String sql = "INSERT INTO MPA_CATEGORIES (NAME) VALUES (:name)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 

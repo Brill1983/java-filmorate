@@ -6,16 +6,15 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.rowMapper.UserRowMapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Component
 @AllArgsConstructor
-public class FriendsDbStorage implements FriendsStorage {
+public class FriendsDbRepository implements FriendsStorage {
 
     private final NamedParameterJdbcOperations jdbcTemplate;
 
@@ -50,8 +49,8 @@ public class FriendsDbStorage implements FriendsStorage {
 
     @Override
     public List<User> getFriendsList(long userId) {
-        String sql = "SELECT U.* FROM FRIENDS AS F JOIN USERS AS U ON F.FRIEND_ID = U.USER_ID WHERE F.USER_ID = :id";
-        List<User> usersList = jdbcTemplate.query(sql, Map.of("id", userId), (rs, rowNum) -> makeUser(rs));
+        String sql = "SELECT U.* FROM FRIENDS AS F JOIN USERS AS U ON F.FRIEND_ID = U.USER_ID WHERE F.USER_ID = :userId ORDER BY U.USER_ID";
+        List<User> usersList = jdbcTemplate.query(sql, Map.of("userId", userId), new UserRowMapper());
         log.info("У пользователя {} найдено {} друзей", userId, usersList.size());
         return usersList;
     }
@@ -60,20 +59,19 @@ public class FriendsDbStorage implements FriendsStorage {
     public List<User> getCommonFriends(long userId, long otherId) {
         String sql = "SELECT * FROM USERS WHERE USER_ID IN (" +
                 "SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = :userId " +
-                "INTERSECT SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = :otherId)";
-        List<User> usersList = jdbcTemplate.query(sql, Map.of("userId", userId, "otherId", otherId), (rs, rowNum) -> makeUser(rs));
+                "INTERSECT SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = :otherId) " +
+                "ORDER BY USER_ID";
+        List<User> usersList = jdbcTemplate.query(sql, Map.of("userId", userId, "otherId", otherId), new UserRowMapper());
         log.info("У пользователя {} и пользователя {} найдено {} общих друзей", userId, otherId, usersList.size());
         return usersList;
     }
 
-    private User makeUser(ResultSet rs) throws SQLException {
-        return new User(
-                rs.getLong("USER_ID"),
-                rs.getString("EMAIL"),
-                rs.getString("LOGIN"),
-                rs.getString("NAME"),
-                rs.getDate("BIRTHDAY").toLocalDate()
-        );
+    @Override
+    public boolean friendshipCheck(long userId, long friendId) {
+        String sqlQuery = "select FRIEND_ID " +
+                "from FRIENDS " +
+                "where USER_ID = :userId and FRIEND_ID = :friendId ";
+        return !jdbcTemplate.queryForList(sqlQuery, Map.of("userId", userId, "friendId", friendId)).isEmpty();
     }
 }
 

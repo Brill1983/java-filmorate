@@ -1,52 +1,71 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.repositoty;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
-import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDbRepository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class FilmDbStorageTest {
+public class FilmDbRepositoryTest {
 
-    private final FilmDbStorage filmStorage;
+    private final FilmDbRepository filmStorage;
+    private Film film1;
+    private Film film2;
 
-    @Test
-    public void testAddFilm() {
-
-        Film film = Film.builder()
+    @BeforeEach
+    public void beforeEach() {
+        film1 = Film.builder()
                 .name("film1")
                 .description("some description")
                 .releaseDate(LocalDate.of(1990, 1, 5))
                 .duration(80)
                 .mpa(new MpaCategory(1, "G"))
-                .rate(4)
                 .build();
-        film.setGenres(List.of(new Genre(1, null)));
+        film1.setGenres(Set.of(new Genre(1, null)));
+        film1.setDirectors(Set.of(new Director(1, "Director1")));
 
-        Film backedFilm = filmStorage.addFilm(film);
+        film2 = Film.builder()
+                .id(1L)
+                .name("FILM2")
+                .description("NEW_DESC")
+                .releaseDate(LocalDate.of(1991, 2, 6))
+                .duration(100)
+                .mpa(new MpaCategory(2, "PG"))
+                .build();
+        film2.setGenres(Set.of(new Genre(1, null), new Genre(2, null)));
+        film2.setDirectors(Set.of(new Director(1, null), new Director(2, null)));
+    }
+
+    @Test
+    public void testAddFilm() {
+
+        Film backedFilm = filmStorage.addFilm(film1);
 
         assertThat(backedFilm)
                 .hasFieldOrPropertyWithValue("id", 1L)
                 .hasFieldOrPropertyWithValue("name", "film1")
                 .hasFieldOrPropertyWithValue("description", "some description")
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1990, 1, 5))
-                .hasFieldOrPropertyWithValue("rate", 4)
                 .hasFieldOrPropertyWithValue("duration", 80);
 
         Integer genreId = backedFilm.getGenres().stream()
@@ -54,6 +73,9 @@ public class FilmDbStorageTest {
                 .collect(Collectors.toList()).get(0);
 
         assertThat(genreId)
+                .isEqualTo(1);
+
+        assertThat(backedFilm.getDirectors().size())
                 .isEqualTo(1);
 
         Integer mpaCatId = backedFilm.getMpa().getId();
@@ -65,26 +87,7 @@ public class FilmDbStorageTest {
     @Test
     public void testUpdateFilm() {
 
-        Film film1 = Film.builder()
-                .name("film1")
-                .description("some description")
-                .releaseDate(LocalDate.of(1990, 1, 5))
-                .duration(80)
-                .mpa(new MpaCategory(1, "G"))
-                .rate(4)
-                .build();
-        film1.setGenres(List.of(new Genre(1, null)));
         filmStorage.addFilm(film1);
-
-        Film film2 = Film.builder()
-                .id(1L)
-                .name("FILM2")
-                .description("NEW_DESC")
-                .releaseDate(LocalDate.of(1991, 2, 6))
-                .duration(100)
-                .mpa(new MpaCategory(2, "PG"))
-                .build();
-        film2.setGenres(List.of(new Genre(1, null), new Genre(2, null)));
 
         Film backedFilm = filmStorage.updateFilm(film2);
 
@@ -99,24 +102,17 @@ public class FilmDbStorageTest {
 
         assertThat(mpaCatId)
                 .isEqualTo(2);
+        assertEquals(2, backedFilm.getGenres().size(), "Wrong genre list");
+        assertThat(backedFilm.getDirectors().size())
+                .isEqualTo(2);
     }
 
     @Test
     public void testGetAllFilms() {
 
-        Film film = Film.builder()
-                .name("film1")
-                .description("some description")
-                .releaseDate(LocalDate.of(1990, 1, 5))
-                .duration(80)
-                .mpa(new MpaCategory(1, "G"))
-                .rate(4)
-                .build();
-        film.setGenres(List.of(new Genre(1, "Комедия")));
+        filmStorage.addFilm(film1);
 
-        filmStorage.addFilm(film);
-
-        List<Film> filmList = filmStorage.getAllFilms();
+        List<Film> filmList = filmStorage.getFilmsList();
 
         assertThat(filmList.size())
                 .isEqualTo(1);
@@ -125,17 +121,7 @@ public class FilmDbStorageTest {
     @Test
     public void testGetFilmById() {
 
-        Film film = Film.builder()
-                .name("film1")
-                .description("some description")
-                .releaseDate(LocalDate.of(1990, 1, 5))
-                .duration(80)
-                .mpa(new MpaCategory(1, "G"))
-                .rate(4)
-                .build();
-        film.setGenres(List.of(new Genre(1, "Комедия")));
-
-        filmStorage.addFilm(film);
+        filmStorage.addFilm(film1);
 
         Optional<Film> userOptional = filmStorage.getFilmById(1);
 

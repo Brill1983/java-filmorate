@@ -7,9 +7,10 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class Genre {
 
     private int id;
-    private String name;
 
+    private String name;
 }

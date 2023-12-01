@@ -10,6 +10,7 @@ import lombok.*;
 public class MpaCategory {
 
     private int id;
+
     private String name;
 
 }

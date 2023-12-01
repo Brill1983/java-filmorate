@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.repositoty;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaCategory;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikesStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -21,7 +21,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class LikesDbStorageTest {
+public class LikesDbRepositoryTest {
 
     @Autowired
     private UserStorage userStorage;
@@ -31,23 +31,24 @@ public class LikesDbStorageTest {
     private LikesStorage likesStorage;
 
     @Test
-    public void testUserLikeFilmDeleteLikeCheckLikeGetPopularFilmList() {
-        User user1 = User.builder()
+    public void testUserLikeFilmDeleteLikeCheckLikeGetMostPopularFilmList() {
+        User user = User.builder()
                 .email("user@ya.ru")
                 .login("userLogin")
                 .name("userName")
                 .birthday(LocalDate.of(1990, 1, 5))
                 .build();
-        userStorage.saveUser(user1);
+        userStorage.saveUser(user);
+
         Film film = Film.builder()
                 .name("film1")
                 .description("some description")
                 .releaseDate(LocalDate.of(1990, 1, 5))
                 .duration(80)
                 .mpa(new MpaCategory(1, "G"))
-                .rate(4)
                 .build();
-        film.setGenres(List.of(new Genre(1, "Комедия")));
+        film.setGenres(Set.of(new Genre(1, "Комедия")));
+        film.setDirectors(Set.of(new Director(1, "Director1")));
         filmStorage.addFilm(film);
 
         likesStorage.userLikedFilm(1, 1);
@@ -56,8 +57,15 @@ public class LikesDbStorageTest {
         assertThat(checkLikeTrue)
                 .isEqualTo(true);
 
-        List<Film> popularFilmList = filmStorage.getPopularFilmList(10);
+        List<Film> popularFilmList = filmStorage.getMostPopularFilms(10);
+        assertThat(popularFilmList.size())
+                .isEqualTo(1);
 
+        popularFilmList = filmStorage.getMostPopularFilmsByGenre(1, 10);
+        assertThat(popularFilmList.size())
+                .isEqualTo(1);
+
+        popularFilmList = filmStorage.getMostPopularFilmsByYear(1990, 10);
         assertThat(popularFilmList.size())
                 .isEqualTo(1);
 

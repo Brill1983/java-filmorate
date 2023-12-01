@@ -3,10 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.MpaCategoryNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectRequestBodyException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.MpaCategory;
-import ru.yandex.practicum.filmorate.storage.MpaCategoryDbStorage;
+import ru.yandex.practicum.filmorate.storage.MpaCategoryStorage;
 
 import java.util.List;
 
@@ -14,21 +14,21 @@ import java.util.List;
 @AllArgsConstructor
 public class MpaCategoryService {
 
-    private final MpaCategoryDbStorage mpaCategoryDbStorage;
+    private final MpaCategoryStorage mpaCategoryRepository;
 
     public List<MpaCategory> findAllMpaCategories() {
-        return mpaCategoryDbStorage.findAllMpaCategories();
+        return mpaCategoryRepository.findAllMpaCategories();
     }
 
     public MpaCategory findMpaCategoryById(int id) {
-        return mpaCategoryDbStorage.findMpaCategoryById(id).orElseThrow(() ->
-                new MpaCategoryNotFoundException("Категории с ID " + id + " нет в базе"));
+        return mpaCategoryRepository.findMpaCategoryById(id).orElseThrow(() ->
+                new ObjectNotFoundException("Категории с ID " + id + " нет в базе"));
     }
 
-    public MpaCategory makeMpaCategory(MpaCategory mpaCategory) { // не нужен
+    public MpaCategory makeMpaCategory(MpaCategory mpaCategory) {
         if (StringUtils.isBlank(mpaCategory.getName())) {
-            throw new ValidationException("Название категории MPA обзятельно для заполнения");
+            throw new IncorrectRequestBodyException("Название категории MPA обзятельно для заполнения");
         }
-        return mpaCategoryDbStorage.createNewMpaCategory(mpaCategory);
+        return mpaCategoryRepository.createNewMpaCategory(mpaCategory);
     }
 }

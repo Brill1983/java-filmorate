@@ -2,72 +2,105 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exceptions.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserStorage userStorage;
-    private final UserValidator userValidator;
-    private final FriendsStorage friendsStorage;
+    private final UserStorage userRepository;
+    private final ValidationService validationService;
+    private final FriendsStorage friendsRepository;
+    private final FilmService filmService;
+    private final EventStorage eventRepository;
 
-    public User saveUser(User user) {
-        userValidator.valid(user);
-        return userStorage.saveUser(user);
-    }
 
-    public User updateUser(User user) {
-        userValidator.validId(user.getId());
-        userValidator.valid(user);
-        return userStorage.updateUser(user);
+    public User getUserById(long userId) {
+        return userRepository.getUserById(userId).orElseThrow(() -> new ObjectNotFoundException("Пользователя с ID " + userId + " нет в базе"));
     }
 
     public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+        return userRepository.getAllUsers();
     }
 
-    public User getUserById(long userId) {
-        return userStorage.getUserById(userId).orElseThrow(() -> new UserNotFoundException("Пользователя с ID " + userId + " нет в базе"));
+
+    public User saveUser(User user) {
+        checkUserName(user);
+        return userRepository.saveUser(checkUserName(user));
     }
 
-    public boolean addAsFriend(long userId, long friendId) {
-        userValidator.validId(userId);
-        userValidator.validId(friendId);
-        List<Long> friendsIdList = friendsStorage.getFriendsList(userId)
-                .stream()
-                .map(User::getId)
-                .collect(Collectors.toList());
-        if (!friendsIdList.contains(friendId)) {
-            friendsStorage.addAsFriend(userId, friendId);
-            return true;
+    public User updateUser(User user) {
+        validationService.validUserId(user.getId());
+        checkUserName(user);
+        return userRepository.updateUser(checkUserName(user));
+    }
+
+    public boolean delete(long userId) {
+        validationService.validUserId(userId);
+        return userRepository.delete(userId);
+    }
+
+    public void addAsFriend(long userId, long friendId) {
+        if (userId == friendId) {
+            throw new IncorrectParameterException("Пользователь не может добавить себя в друзья.");
         }
-        log.info("Пользователь с ID {} уже есть друг c ID {}", userId, friendId);
-        return false;
+        validationService.validUserId(userId);
+        validationService.validUserId(friendId);
+        if (friendsRepository.friendshipCheck(userId, friendId)) {
+            log.info("Пользователь с ID {} уже есть друг c ID {}", userId, friendId);
+            throw new IncorrectParameterException("Такой запрос дружбы уже существует.");
+        }
+        friendsRepository.addAsFriend(userId, friendId);
+        eventRepository.add(new Event(userId, EventType.FRIEND, friendId, Operation.ADD));
     }
 
-    public boolean deleteFriend(long userId, long friendId) {
-        userValidator.validId(userId);
-        userValidator.validId(friendId);
-        return friendsStorage.deleteFriend(userId, friendId);
+    public void deleteFriend(long userId, long friendId) {
+        validationService.validUserId(userId);
+        validationService.validUserId(friendId);
+        if (!friendsRepository.friendshipCheck(userId, friendId)) {
+            log.info("Пользователь {} не имеет в друзьях пользователя {}", userId, friendId);
+            throw new IncorrectParameterException("Такой запрос дружбы не существует.");
+        }
+        friendsRepository.deleteFriend(userId, friendId);
+        eventRepository.add(new Event(userId, EventType.FRIEND, friendId, Operation.REMOVE));
     }
 
     public List<User> getFriendsList(long userId) {
-        userValidator.validId(userId);
-        return friendsStorage.getFriendsList(userId);
+        validationService.validUserId(userId);
+        return friendsRepository.getFriendsList(userId);
     }
 
     public List<User> getCommonFriends(long userId, long otherId) {
-        userValidator.validId(userId);
-        userValidator.validId(otherId);
-        return friendsStorage.getCommonFriends(userId, otherId);
+        validationService.validUserId(userId);
+        validationService.validUserId(otherId);
+        return friendsRepository.getCommonFriends(userId, otherId);
+    }
+
+    public List<Event> getUserFeed(long userId) {
+        validationService.validUserId(userId);
+        return eventRepository.getEventsByUserId(userId);
+    }
+
+    public List<Film> getRecommendations(long userId) {
+        validationService.validUserId(userId);
+        return filmService.getRecommendations(userId);
+    }
+
+    private User checkUserName(User user) {
+        if (StringUtils.isBlank(user.getName())) {
+            log.debug("Вместо пустого имени присваивается логин");
+            user.setName(user.getLogin());
+        }
+        return user;
     }
 }
